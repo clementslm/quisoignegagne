@@ -1,0 +1,2065 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qui soigne gagne !</title>
+<style>
+:root{
+  --bg:#14213d; --paper:#fffaf0; --ink:#1f2433; --muted:#6b7280; --line:#e7dfcf;
+  --ok:#16a34a; --ko:#dc2626; --gold:#ffd166;
+  --shadow:0 12px 32px rgba(0,0,0,.28);
+  --d:86px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%}
+body{
+  font-family:"Nunito","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);
+  background:
+    radial-gradient(1100px 650px at 15% -10%, #2b4c7e 0%, transparent 60%),
+    radial-gradient(900px 600px at 110% 110%, #40307a 0%, transparent 55%),
+    var(--bg);
+  background-attachment:fixed;-webkit-tap-highlight-color:transparent;
+}
+.screen{display:none}.screen.active{display:block}
+.muted{color:var(--muted)}
+h1,h2,h3{margin:0}
+
+/* ---------- Boutons ---------- */
+.btn{appearance:none;border:0;border-radius:14px;padding:12px 20px;font:inherit;font-weight:800;font-size:1.03rem;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;color:var(--ink);background:#fff;
+  box-shadow:0 4px 0 rgba(0,0,0,.25);transition:transform .1s, box-shadow .15s, opacity .2s}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.primary{background:var(--gold);color:#2b2100}
+.btn.dark{background:#22314f;color:#fff}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.ko{background:var(--ko);color:#fff}
+.btn.ghost{background:transparent;color:#fff;box-shadow:none;border:2px solid rgba(255,255,255,.55)}
+.btn.ghost.darkt{color:var(--ink);border-color:#c9bfae}
+.btn.small{min-height:40px;padding:7px 14px;font-size:.92rem}
+.btn.xl{font-size:1.22rem;min-height:60px;padding:14px 30px}
+.btn.wide{width:100%}
+.iconbtn{appearance:none;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;border-radius:12px;
+  min-height:42px;padding:6px 12px;font:inherit;font-weight:800;cursor:pointer}
+.iconbtn:hover{background:rgba(255,255,255,.16)}
+
+/* ---------- Accueil ---------- */
+.hero{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:48px;align-items:center;padding:32px clamp(16px,5vw,64px);color:#fff}
+@media (max-width:960px){.hero{grid-template-columns:1fr;gap:28px}}
+.hero h1{font-size:clamp(2.3rem,5.6vw,4.4rem);font-weight:900;line-height:1.18;letter-spacing:-.01em;padding:.04em .06em .16em 0;overflow:visible;overflow-wrap:break-word;
+  background:linear-gradient(90deg,#ffd166,#ff9f68,#f472b6,#a78bfa,#60a5fa,#34d399);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .kicker{font-weight:900;letter-spacing:.14em;text-transform:uppercase;font-size:.82rem;opacity:.8;margin-bottom:10px}
+.contexte{margin:24px 0 26px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-left:5px solid var(--gold);
+  border-radius:16px;padding:16px 20px;max-width:580px}
+.contexte .ct{font-size:.78rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.contexte p{margin:0;font-size:1.06rem;line-height:1.6}
+.hero .menu{display:flex;flex-direction:column;gap:12px;width:min(380px,100%)}
+.hero .menu .btn{width:100%}
+.home-board .board{width:100%;pointer-events:none;box-shadow:0 30px 60px rgba(0,0,0,.4)}
+
+/* ---------- Préparation ---------- */
+.panel{background:var(--paper);border-radius:24px;padding:26px;max-width:1000px;margin:24px auto;box-shadow:var(--shadow)}
+.panel h2{font-size:1.8rem;font-weight:900}
+.step-t{font-weight:900;font-size:1.05rem;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.step-t .n{width:28px;height:28px;border-radius:50%;background:#22314f;color:#fff;display:grid;place-items:center;font-size:.9rem}
+.setup-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:28px;margin-top:18px}
+@media (max-width:820px){.setup-grid{grid-template-columns:1fr}.panel{margin:12px;padding:18px}}
+.count{display:flex;gap:8px;flex-wrap:wrap}
+.count button{width:56px;height:56px;border-radius:14px;border:2px solid var(--line);background:#fff;font:inherit;font-size:1.4rem;font-weight:900;cursor:pointer}
+.count button.on{background:#22314f;color:#fff;border-color:#22314f}
+.names{display:grid;gap:8px;margin-top:14px}
+.names .row{display:flex;align-items:center;gap:10px}
+.names input{flex:1;min-width:0;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font:inherit;font-size:1.05rem;background:#fff}
+.names input:focus{outline:none;border-color:#22314f}
+.avpick{width:50px;height:50px;border-radius:50%;border:3px solid #fff;background:var(--a);font-size:1.5rem;cursor:pointer;flex:none;box-shadow:0 2px 6px rgba(0,0,0,.2);position:relative}
+.avpick small{position:absolute;bottom:-4px;right:-4px;background:#22314f;color:#fff;font-size:.65rem;font-weight:900;border-radius:99px;padding:1px 5px}
+.info-list{display:grid;gap:10px}
+.info-item{display:flex;gap:12px;align-items:flex-start;background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px 14px;line-height:1.45;font-size:.95rem}
+.info-item b{display:block;font-size:1rem}
+.info-item .ii{width:34px;height:34px;border-radius:10px;background:#22314f;color:#fff;display:grid;place-items:center;flex:none;font-weight:900}
+.setup-actions{display:flex;justify-content:flex-end;margin-top:24px}
+
+/* ---------- Écran de jeu ---------- */
+#screen-game.active{display:flex;flex-direction:column;height:100vh}
+.topbar{display:flex;align-items:center;gap:10px;padding:8px 14px;color:#fff;flex-wrap:wrap}
+.topbar .logo{font-weight:900;font-size:1.15rem;margin-right:auto}
+.topbar .tourno{font-weight:800;opacity:.85}
+.layout{flex:1;min-height:0;display:grid;gap:14px;padding:0 14px 14px;grid-template-columns:260px minmax(0,1fr) 260px;grid-template-areas:"moi board droite"}
+.col-moi{grid-area:moi}.col-board{grid-area:board}.col-droite{grid-area:droite}
+.col-moi,.col-droite{overflow:auto;min-height:0}
+.col-board{display:flex;align-items:center;justify-content:center;min-height:0;min-width:0}
+@media (max-width:1150px){
+  #screen-game.active{height:auto;min-height:100vh}
+  .layout{grid-template-columns:1fr 1fr;grid-template-areas:"board board" "moi droite"}
+  .col-moi,.col-droite{overflow:visible}
+}
+@media (max-width:680px){
+  .layout{grid-template-columns:1fr;grid-template-areas:"board" "droite" "moi";gap:10px;padding:0 10px 12px}
+  :root{--d:58px}
+  .topbar{padding:6px 10px;gap:6px}
+  .topbar .logo{font-size:1rem}
+  .topbar .tourno{display:none}
+  .topbar .iconbtn,.topbar .btn.small{min-height:38px;padding:4px 9px;font-size:.85rem}
+  .dice-panel{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;text-align:left;padding:10px 12px}
+  .dice-panel .dp-turn{grid-column:1/-1;justify-content:flex-start;margin-bottom:2px}
+  .dice-panel .dice-wrap{margin:0;grid-row:span 3}
+  .dice-panel .dp-val{margin:0;min-height:0;font-size:.9rem}
+  .dice-panel .dp-val b{font-size:1.2rem}
+  .dice-panel .btn.xl{font-size:1.05rem;min-height:50px;padding:10px 14px}
+  .dice-panel .dp-info{margin-top:2px;min-height:0;font-size:.86rem}
+}
+.side-t{color:#fff;font-weight:900;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px 4px;opacity:.85}
+.card-p{background:rgba(255,255,255,.96);border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+
+/* ---------- Plateau : plan du service ---------- */
+.board{position:relative;container-type:inline-size;aspect-ratio:3/2;width:min(100%, calc((100vh - 84px) * 1.5));
+  border-radius:18px;overflow:hidden;background:#dfe7ec;box-shadow:var(--shadow)}
+@media (max-width:1150px){.board{width:100%}}
+.board svg.plan{position:absolute;inset:0;width:100%;height:100%;display:block}
+.plan .ext{fill:#cfd8de}
+.plan .bat{fill:none;stroke:#3d4856;stroke-width:.34}
+.plan .piste{fill:none;stroke:#e3d4b4;stroke-width:.05;stroke-dasharray:.25 .2}
+.plan .room rect{stroke:#4a5565;stroke-width:.14}
+.plan .gap{stroke:#f2ead9;stroke-width:.2;stroke-linecap:butt}
+.plan .leaf{stroke:#4a5565;stroke-width:.07}
+.plan .arc{fill:none;stroke:#7d8794;stroke-width:.04;stroke-dasharray:.12 .1}
+.plan .rlab{font-family:"Nunito","Segoe UI",system-ui,sans-serif;font-size:.5px;font-weight:800;fill:#3a4656;letter-spacing:.01px}
+.plan .cellg{transform-box:fill-box;transform-origin:center;transition:transform .2s}
+.plan .cellg.trail{transform:scale(1.28)}
+.plan .halo{fill:none;stroke:#ffb703;stroke-width:.16;opacity:0}
+.plan .cellg.land .halo{opacity:1;animation:halo 1s ease-in-out infinite}
+@keyframes halo{50%{stroke-width:.3;opacity:.55}}
+.pawn{position:absolute;width:3.5cqw;height:3.5cqw;margin:-1.75cqw 0 0 -1.75cqw;border-radius:50%;background:var(--a);border:.35cqw solid #fff;
+  box-shadow:0 .35cqw .8cqw rgba(0,0,0,.35);display:grid;place-items:center;font-size:1.8cqw;z-index:6;
+  transition:left .26s cubic-bezier(.3,.7,.4,1.4), top .26s cubic-bezier(.3,.7,.4,1.4)}
+.pawn b{position:absolute;bottom:-.8cqw;right:-.8cqw;background:#1f2433;color:#fff;font-size:.9cqw;border-radius:99px;min-width:1.7cqw;height:1.7cqw;display:grid;place-items:center;border:.18cqw solid #fff}
+.pawn.active{z-index:7;border-color:var(--gold);animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{50%{margin-top:-2.3cqw}}
+
+/* ---------- Panneau privé ---------- */
+.me-h{display:flex;align-items:center;gap:10px}
+.pawnav{width:44px;height:44px;border-radius:50%;background:var(--a);border:3px solid #fff;display:grid;place-items:center;font-size:1.35rem;flex:none;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.me-n{font-weight:900;font-size:1.2rem;line-height:1.1}
+.me-s{font-size:.85rem;color:var(--muted);font-weight:700}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--c);vertical-align:-1px;margin-right:3px;border:1px solid rgba(0,0,0,.15)}
+.dot.multi{background:conic-gradient(#e5484d 0 60deg,#f57c1f 0 120deg,#f2b200 0 180deg,#1f9d63 0 240deg,#3b82f6 0 300deg,#8b5cf6 0)}
+.secret-hidden{text-align:center;border:3px dashed #c9bfae;border-radius:14px;padding:16px 10px;background:repeating-linear-gradient(45deg,#f6f1e6 0 10px,#fffaf0 10px 20px)}
+.secret-hidden .lock{font-size:2.2rem}
+.secret-hidden p{margin:4px 0 10px;font-weight:800;color:#6b5a3a}
+.defi{color:var(--ink);background:var(--paper);border-radius:16px;padding:12px;border:4px solid var(--gold)}
+.defi .dh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px}
+.defi .dh b{font-size:1.05rem;font-weight:900}
+.defi-reveal{animation:flipIn .7s cubic-bezier(.2,1.2,.4,1)}
+@keyframes flipIn{0%{transform:perspective(800px) rotateY(90deg) scale(.8);opacity:0}100%{transform:none;opacity:1}}
+.defi .dh span{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#9a7b16;white-space:nowrap}
+.drow{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:10px;margin-bottom:4px;background:#fff}
+.drow .sw{width:22px;height:22px;border-radius:50%;background:var(--c);flex:none;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+.drow .th{flex:1;font-weight:800;font-size:.95rem}
+.drow .q{font-size:1.15rem;font-weight:900;min-width:38px;text-align:right}
+.drow.done{background:#e6f8ec}
+.drow.done .q{color:var(--ok)}
+.bar{height:8px;border-radius:99px;background:#ece5d8;overflow:hidden;margin:8px 0 2px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#34d399,#16a34a);transition:width .5s}
+.coll{display:flex;flex-wrap:wrap;gap:4px}
+.coll i{width:14px;height:19px;border-radius:4px;background:var(--c);display:inline-block;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)}
+
+/* ---------- Panneau de droite ---------- */
+.dice-panel{text-align:center}
+.dp-turn{font-weight:900;font-size:1.05rem;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.dp-turn .pawnav{width:34px;height:34px;font-size:1.05rem}
+.dice-wrap{perspective:600px;width:var(--d);height:var(--d);margin:4px auto 12px}
+.dice{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 1.25s cubic-bezier(.15,.75,.25,1)}
+.dface{position:absolute;inset:0;border-radius:16px;background:linear-gradient(145deg,#fff,#eef1f6);border:2px solid #d5dbe5;
+  -webkit-backface-visibility:hidden;backface-visibility:hidden;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:14%;
+  box-shadow:inset 0 -6px 0 rgba(0,0,0,.06)}
+.dface i{width:62%;height:62%;border-radius:50%;background:#22314f;place-self:center;visibility:hidden}
+.dface i.on{visibility:visible}
+.dface.f1 i.on{background:#e5484d}
+.f1{transform:rotateY(0deg) translateZ(calc(var(--d)/2))}
+.f3{transform:rotateY(90deg) translateZ(calc(var(--d)/2))}
+.f6{transform:rotateY(180deg) translateZ(calc(var(--d)/2))}
+.f4{transform:rotateY(-90deg) translateZ(calc(var(--d)/2))}
+.f2{transform:rotateX(90deg) translateZ(calc(var(--d)/2))}
+.f5{transform:rotateX(-90deg) translateZ(calc(var(--d)/2))}
+.dp-val{font-weight:900;font-size:1rem;min-height:1.4em;margin-bottom:8px}
+.dp-val b{font-size:1.6rem;color:#22314f}
+.dp-info{margin-top:10px;font-weight:800;font-size:.95rem;min-height:2.6em;line-height:1.35}
+.dp-info .chipc{display:inline-flex;align-items:center;gap:4px;background:var(--c);color:var(--ci);border-radius:99px;padding:2px 10px;font-weight:900}
+.pl{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;border:2px solid transparent;margin-bottom:6px;background:#fff}
+.pl.active{border-color:var(--gold);background:#fff8e1}
+.pl .pawnav{width:36px;height:36px;font-size:1.1rem;position:relative}
+.pl .pawnav b{position:absolute;bottom:-4px;right:-4px;background:#1f2433;color:#fff;font-size:.6rem;border-radius:99px;padding:1px 4px}
+.pl-i{flex:1;min-width:0}
+.pl-i b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-i small{color:var(--muted);font-weight:700}
+.pl-c{font-weight:900;white-space:nowrap}
+details.sit{margin-top:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:14px;color:#fff}
+details.sit summary{padding:10px 14px;font-weight:900;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+details.sit p{margin:0;padding:0 14px 12px;font-size:.92rem;line-height:1.5}
+
+/* ---------- Superposition question ---------- */
+.qover{position:fixed;inset:0;background:rgba(10,16,32,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:30;
+  backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px)}
+.qover.open{display:flex;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}}
+.qwrap{width:min(860px,100%);max-height:96vh;overflow:auto;background:rgba(20,33,61,.96);border-radius:24px;padding:14px 16px 16px;box-shadow:0 30px 60px rgba(0,0,0,.45)}
+.qtop{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;margin-bottom:12px}
+.qbtns{display:flex;flex-direction:column;gap:6px}
+.qover.min{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;align-items:flex-end;pointer-events:none}
+.qover.min .qwrap{pointer-events:auto;max-width:620px}
+.qover.min .qwrap > :not(.qtop){display:none}
+.qover.min .qtop{margin:0}
+.consigne{color:#fff;font-size:1.05rem;font-weight:800;line-height:1.35;background:rgba(0,0,0,.2);border-radius:14px;padding:10px 14px;min-height:50px;display:flex;align-items:center}
+.consigne.autres{background:rgba(255,209,102,.18);border:2px solid var(--gold)}
+.timer{position:relative;width:96px;height:96px;flex:none}
+.timer svg{transform:rotate(-90deg);display:block;width:96px;height:96px}
+.timer .bgc{stroke:rgba(255,255,255,.15)}
+.timer #ring{stroke:var(--gold);transition:stroke .3s}
+.timer .num{position:absolute;inset:0;display:grid;place-items:center;font-size:2.4rem;font-weight:900;color:#fff}
+.timer.warn #ring{stroke:#ff5d5d}
+.timer.warn .num{color:#ffb3b3;animation:pulse .5s ease-in-out infinite alternate}
+.timer.paused .num::after{content:"⏸";position:absolute;font-size:.85rem;top:18px;right:16px}
+@keyframes pulse{to{transform:scale(1.12)}}
+@media (max-width:560px){.qtop{grid-template-columns:auto 1fr}.qtop .qbtns{grid-column:1/-1;flex-direction:row}.qtop .qbtns .iconbtn{flex:1}.timer,.timer svg{width:78px;height:78px}.timer .num{font-size:2rem}}
+
+/* Choix de couleur (case multicolore) */
+.choix{background:var(--paper);border-radius:22px;padding:22px;text-align:center}
+.choix h3{font-size:1.5rem;font-weight:900;margin-bottom:6px}
+.choix p{margin:0 0 18px;color:#3b4252;font-weight:700}
+.choix-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:560px){.choix-grid{grid-template-columns:repeat(2,1fr)}}
+.choix-grid button{appearance:none;border:0;border-radius:16px;background:var(--c);color:var(--ci);font:inherit;font-weight:900;font-size:1.1rem;min-height:84px;cursor:pointer;
+  box-shadow:0 5px 0 rgba(0,0,0,.2), inset 0 0 0 3px rgba(255,255,255,.5);transition:transform .12s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.choix-grid button:hover{transform:translateY(-2px)}
+.choix-grid button i{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.7),transparent 50%),var(--c);border:3px solid #fff}
+
+/* Carte question */
+.card-scene{perspective:1600px}
+.card-inner{display:grid;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,.7,.3,1);animation:dealIn .45s ease-out}
+@keyframes dealIn{from{transform:translateY(-30px) scale(.92);opacity:0}}
+.card-inner.flipped{transform:rotateY(180deg)}
+.card-inner.settled{transform:none;transition:none;animation:none}
+.card-inner .face{grid-area:1/1;-webkit-backface-visibility:hidden;backface-visibility:hidden;border-radius:22px}
+.card-inner .qface{transform:rotateY(180deg);pointer-events:none}
+.card-inner.settled .qface{transform:none;pointer-events:auto}
+.card-inner.settled .cover{display:none}
+.cover{background:var(--c);border:6px solid #fff;min-height:260px;display:grid;place-items:center;
+  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.1) 0 14px,transparent 14px 28px)}
+.cover-in{text-align:center;color:var(--ci)}
+.cover-title{font-size:1.9rem;font-weight:900}
+.cover-sub{font-size:.85rem;font-weight:800;opacity:.85;text-transform:uppercase;letter-spacing:.08em;margin-top:6px}
+.qface{background:var(--paper);border:6px solid var(--c);overflow:hidden}
+.q-head{background:var(--c);color:var(--ci);display:flex;gap:10px;align-items:center;padding:10px 16px;font-weight:900;flex-wrap:wrap}
+.q-head .q-type{background:rgba(255,255,255,.25);border-radius:999px;padding:3px 10px;font-size:.85rem}
+.q-head .q-id{margin-left:auto;opacity:.85;font-size:.85rem}
+.q-body{padding:20px 22px}
+.q-text{font-size:clamp(1.2rem,2.2vw,1.7rem);font-weight:800;line-height:1.3}
+.q-ctx{font-size:1.02rem;margin:0 0 10px;color:#3b4252;font-weight:700}
+.indices{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.indices li{background:#fff;border-left:6px solid var(--c);border-radius:10px;padding:10px 14px;font-size:1.06rem;font-weight:700}
+.rebus{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:14px 0 4px}
+.rebus .tile{display:grid;place-items:center;min-width:1.5em;height:1.5em;padding:0 .12em;background:#fff;border:2px solid var(--line);border-radius:16px;font-size:clamp(2.2rem,6.5vw,3.8rem);line-height:1;box-shadow:0 3px 0 rgba(0,0,0,.06)}
+.rebus .tile.txt{font-weight:900;color:#22314f;font-size:clamp(1.8rem,5vw,2.8rem);height:calc(1.5em * 1.3)}
+.indices li.cache{opacity:.55;font-style:italic;font-weight:700;border-left-style:dashed}
+.trous{font-size:clamp(1.12rem,2vw,1.35rem);font-weight:700;line-height:2.2;margin:14px 0 0;color:#2a3142}
+.blank{font:inherit;font-weight:800;font-size:1em;padding:2px 8px;margin:0 2px;border:0;border-bottom:3px solid #22314f;border-radius:8px 8px 4px 4px;background:#fff4d6;color:var(--ink);max-width:100%}
+.blank:focus{outline:none;background:#ffe9a8;box-shadow:0 0 0 3px rgba(255,209,102,.5)}
+.blank.good{background:#e6f8ec;border-color:var(--ok)}
+.blank.fix{background:#fdeaea;border-color:var(--ko)}
+.blank:disabled{opacity:1;-webkit-text-fill-color:var(--ink)}
+.champs{display:grid;gap:12px;margin-top:14px}
+.champ{background:#fff;border:2px solid var(--line);border-left:6px solid var(--c);border-radius:12px;padding:10px 14px}
+.champ p{margin:0 0 8px;font-weight:700;font-size:1.05rem;line-height:1.4}
+.champ label{display:flex;align-items:center;gap:10px;font-weight:900;flex-wrap:wrap}
+.blank.large{flex:1;min-width:200px;padding:8px 12px;border:3px solid #22314f;border-radius:12px;background:#fff}
+.answer mark{background:#ffe08a;color:#2b2100;font-weight:900;border-radius:4px;padding:0 3px}
+.texte-corrige{font-weight:700;line-height:1.6}
+.adm-opts{display:grid;gap:4px;margin:6px 0}
+.hint{font-size:.9rem;color:var(--muted);font-weight:700;margin-top:10px}
+.opts{display:grid;gap:9px;margin-top:16px}
+.opt{display:flex;gap:12px;align-items:center;padding:12px 15px;border-radius:14px;border:2px solid var(--line);background:#fff;font:inherit;
+  font-size:1.05rem;font-weight:700;cursor:pointer;text-align:left;color:var(--ink);transition:border-color .15s, background .15s, transform .1s}
+.opt:hover{border-color:#bdb3a0}
+.opt .k{width:34px;height:34px;border-radius:10px;background:#efe9dd;display:grid;place-items:center;flex:none;font-weight:900}
+.opt.sel{border-color:var(--c);background:#fff4d6;transform:scale(1.01)}
+.opt.sel .k{background:var(--c);color:var(--ci)}
+.opt.correct{border-color:var(--ok)!important;background:#e6f8ec!important}
+.opt.correct .k{background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--ko)!important;background:#fdeaea!important}
+.vf{grid-template-columns:1fr 1fr}
+.vf .opt{justify-content:center;font-size:1.25rem;min-height:62px}
+.locked .opt{cursor:default}
+.locked .opt:hover{border-color:var(--line)}
+.static-opts .opt{cursor:default}
+.rep-zone{margin-top:16px}
+.rep-zone label{display:flex;justify-content:space-between;gap:8px;font-weight:900;margin-bottom:6px;flex-wrap:wrap}
+.rep-zone label span{font-weight:700;color:var(--muted);font-size:.88rem}
+.rep-zone textarea,.rep-zone input{width:100%;border:3px solid #22314f;border-radius:14px;padding:12px 14px;font:inherit;font-size:1.12rem;background:#fff;color:var(--ink)}
+.rep-zone textarea{min-height:110px;resize:vertical}
+.rep-zone input{max-width:360px;font-size:1.3rem;font-weight:800}
+.rep-zone textarea:focus,.rep-zone input:focus{outline:none;border-color:var(--c);box-shadow:0 0 0 4px rgba(255,209,102,.4)}
+.rep-zone textarea:disabled,.rep-zone input:disabled{background:#f3efe6;border-color:#c9bfae;color:#5b6170}
+.feedback.partiel{background:#fff4d6;color:#7a5600}
+.feedback{margin-top:10px;border-radius:12px;padding:10px 12px;font-weight:800;font-size:.95rem;background:#fdeaea;color:#8b1c1c}
+.answer{margin:0 22px 20px;padding:14px 16px;border-radius:14px;background:#eef5ff;border:2px solid #cddfff;line-height:1.45}
+.answer .at{font-weight:900;text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:#3155a4;margin-bottom:4px}
+.answer .ar{font-size:1.12rem;font-weight:800;white-space:pre-line}
+.answer .ax{margin-top:10px;color:#374151;white-space:pre-line}
+.answer .calc{margin-top:10px;background:#fff;border-radius:10px;padding:10px 12px;font-family:ui-monospace,Consolas,monospace;font-size:1rem;white-space:pre-line;border:1px solid #cddfff}
+.answer .warnline{margin-top:10px;font-size:.86rem;color:#8a6500;font-weight:700}
+.answer .attendus{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.answer .attendus span{background:#fff;border:2px solid #cddfff;border-radius:99px;padding:3px 10px;font-weight:800;font-size:.88rem}
+.answer .attendus span.on{background:#e6f8ec;border-color:var(--ok);color:#14632f}
+.cw{display:grid;gap:4px;justify-content:center;margin:16px auto 8px;--s:clamp(30px,6.5vw,48px)}
+.cw .cell2{width:var(--s);height:var(--s);position:relative}
+.cw .cell2.empty{visibility:hidden}
+.cw input{width:100%;height:100%;text-align:center;font-size:1.35rem;font-weight:900;text-transform:uppercase;border:2px solid #3a4256;border-radius:8px;background:#fff;
+  font-family:inherit;color:var(--ink);padding:0;caret-color:transparent}
+.cw input:focus{outline:none;background:#fff4d6;border-color:var(--c)}
+.cw input:disabled{background:#f3efe6;color:var(--ink);opacity:1;-webkit-text-fill-color:var(--ink)}
+.cw input.good{background:#e6f8ec;border-color:var(--ok)}
+.cw input.fix{background:#fdeaea;border-color:var(--ko)}
+.cw .n{position:absolute;top:1px;left:4px;font-size:.66rem;font-weight:900;pointer-events:none;z-index:1}
+.clues{display:grid;gap:6px;margin-top:10px}
+.clues div{background:#fff;border-radius:10px;padding:8px 12px;font-weight:700;border:2px solid var(--line);cursor:pointer}
+.clues div.on{border-color:var(--c)}
+.result{margin-top:12px;padding:12px 16px;border-radius:14px;font-weight:900;font-size:1.1rem;color:#fff;text-align:center}
+.result.win{background:var(--ok)}
+.result.lose{background:#475569}
+.controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-top:14px}
+.wait{color:#fff;opacity:.8;font-weight:800;min-height:50px;display:flex;align-items:center}
+.resp{width:100%;text-align:center}
+.resp-t{color:#fff;font-weight:900;margin-bottom:8px}
+.resp-b{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+
+/* ---------- Passage de main / pause ---------- */
+.handoff,.pausebox{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:20px;text-align:center;color:#fff;
+  background:radial-gradient(900px 500px at 50% 30%,#2b4c7e,#0d1730)}
+.handoff.open,.pausebox.open{display:flex;animation:fadeIn .35s}
+.pausebox{z-index:45;background:rgba(8,12,28,.92)}
+.ho-in{max-width:560px}
+.ho-av{width:120px;height:120px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;font-size:3.6rem;background:var(--a);border:6px solid #fff;box-shadow:var(--shadow);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+.handoff h2,.pausebox h2{font-size:clamp(2rem,5vw,3rem);font-weight:900}
+.handoff p,.pausebox p{font-size:1.1rem;opacity:.9;line-height:1.5}
+.tirage{display:inline-block;background:var(--gold);color:#2b2100;font-weight:900;border-radius:99px;padding:8px 18px;margin-bottom:18px;font-size:1.05rem}
+@keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:none;opacity:1}}
+
+/* ---------- Victoire ---------- */
+.win-wrap{max-width:980px;margin:28px auto;padding:0 16px;text-align:center;color:#fff}
+.trophy{font-size:5rem;animation:pop .7s cubic-bezier(.2,1.4,.4,1)}
+.win-wrap h2{font-size:clamp(2rem,5vw,3.2rem);font-weight:900}
+.win-wrap .sub{opacity:.85;margin:8px 0 22px;font-size:1.1rem}
+.win-grid{display:grid;grid-template-columns:300px 1fr;gap:18px;text-align:left}
+@media (max-width:760px){.win-grid{grid-template-columns:1fr}}
+.score-table{background:var(--paper);color:var(--ink);border-radius:18px;padding:14px;box-shadow:var(--shadow);overflow:auto}
+.score-table table{width:100%;border-collapse:collapse}
+.score-table th,.score-table td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:center;font-weight:700}
+.score-table th:first-child,.score-table td:first-child{text-align:left}
+.score-table tr.w td{background:#fff4d6;font-weight:900}
+.score-table .sq{width:14px;height:14px;border-radius:50%;background:var(--c);display:inline-block;vertical-align:middle}
+.score-table .objs{font-size:.8rem;color:var(--muted);font-weight:700}
+.win-actions{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
+
+/* ---------- Modale ---------- */
+.modal-back{position:fixed;inset:0;background:rgba(8,12,28,.65);display:none;align-items:center;justify-content:center;padding:14px;z-index:50}
+.modal-back.open{display:flex}
+.modal{background:var(--paper);border-radius:20px;max-width:860px;width:100%;max-height:90vh;overflow:auto;padding:22px 24px;box-shadow:var(--shadow);animation:pop .3s ease-out}
+.modal.narrow{max-width:480px}
+.modal .mh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;position:sticky;top:-22px;background:var(--paper);padding:6px 0;z-index:2}
+.modal .mh h2{font-size:1.45rem;font-weight:900}
+.modal p,.modal li{line-height:1.5}
+.modal h3{margin:18px 0 6px;font-size:1.08rem}
+.menu-list{display:grid;gap:10px}
+.menu-list .btn{justify-content:flex-start;width:100%}
+.confirm-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.adm-card{border:2px solid var(--line);border-left:8px solid var(--c);border-radius:12px;padding:12px 14px;margin:10px 0;background:#fff}
+.adm-card.ok{background:#f1fbf4}
+.adm-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.adm-h .st{margin-left:auto;font-weight:900;font-size:.9rem}
+.adm-q{font-weight:700;margin-bottom:6px}
+.adm-q ul{margin:6px 0 0 18px;padding:0;font-weight:600}
+.adm-note{background:#fff7e0;border-radius:8px;padding:8px 10px;font-size:.92rem;margin-bottom:8px}
+.adm-card label{display:block;font-weight:800;font-size:.9rem;margin-top:6px}
+.adm-card label small{font-weight:600;color:var(--muted)}
+.adm-card textarea{width:100%;margin-top:4px;border:2px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:.95rem;resize:vertical}
+.adm-card .chk{display:flex;gap:8px;align-items:center;cursor:pointer}
+.adm-card .chk input{width:20px;height:20px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--c);color:var(--ci);font-weight:800;font-size:.85rem}
+details.bank{border:2px solid var(--line);border-radius:12px;margin:8px 0;background:#fff}
+details.bank summary{padding:10px 14px;font-weight:900;cursor:pointer}
+details.bank ol{margin:0;padding:0 16px 12px 36px}
+details.bank li{margin:6px 0;font-size:.93rem}
+details.bank li .r{color:#2f6f3e;font-weight:700}
+details.bank li .k{color:#6b5a3a;font-size:.85rem}
+.counts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+@media (max-width:560px){.counts{grid-template-columns:repeat(2,1fr)}}
+.counts div{background:var(--c);color:var(--ci);border-radius:10px;padding:8px 10px;font-weight:800;font-size:.9rem}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);background:#111827;color:#fff;padding:12px 20px;border-radius:14px;
+  font-weight:800;opacity:0;transition:all .3s;z-index:70;box-shadow:var(--shadow);max-width:90vw;text-align:center;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}.dice,.card-inner,.pawn{transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+
+<!-- ================= ACCUEIL ================= -->
+<section id="screen-home" class="screen active">
+  <div class="hero">
+    <div>
+      <div class="kicker">Jeu de plateau · Soins palliatifs</div>
+      <h1>Qui soigne gagne&nbsp;!</h1>
+      <div class="contexte">
+        <div class="ct">Situation clinique</div>
+        <p id="contexteTxt"></p>
+      </div>
+      <div class="menu">
+        <button class="btn primary xl" data-a="resume-save" id="resumeBtn" hidden>▶ Reprendre la partie</button>
+        <button class="btn primary xl" data-a="home-new" id="newBtn">🎲 Nouvelle partie</button>
+        <button class="btn" data-a="rules">📖 Règles du jeu</button>
+      </div>
+    </div>
+    <div class="home-board"><div class="board" id="homeBoard"></div></div>
+  </div>
+</section>
+
+<!-- ================= PRÉPARATION ================= -->
+<section id="screen-setup" class="screen">
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <h2>Préparer la partie</h2>
+      <button class="btn ghost darkt small" data-a="home">← Accueil</button>
+    </div>
+    <div class="setup-grid">
+      <div>
+        <p class="step-t"><span class="n">1</span> Nombre de joueurs</p>
+        <div class="count" id="countBtns"></div>
+        <p class="step-t" style="margin-top:22px"><span class="n">2</span> Noms et pions <span class="muted" style="font-weight:700;font-size:.85rem">(touchez un pion pour le changer)</span></p>
+        <div class="names" id="nameInputs"></div>
+      </div>
+      <div>
+        <p class="step-t"><span class="n">3</span> Au lancement</p>
+        <div class="info-list">
+          <div class="info-item"><span class="ii">1</span><div><b>Premier joueur tiré au sort</b>Le jeu désigne au hasard qui commence.</div></div>
+          <div class="info-item"><span class="ii">2</span><div><b>Cartes Défi secrètes et équitables</b>À son premier tour, chaque joueur tire au hasard sa carte Défi. Les répartitions par couleur diffèrent, le nombre total de cartes est le même pour tous.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="setup-actions">
+      <button class="btn primary xl" data-a="start">✅ Lancer la partie</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= JEU ================= -->
+<section id="screen-game" class="screen">
+  <div class="topbar">
+    <div class="logo">Qui soigne gagne&nbsp;!</div>
+    <span class="tourno" id="tourNo"></span>
+    <button class="iconbtn" data-a="sound" id="soundBtn" title="Activer / couper le son">🔊 Son</button>
+    <button class="iconbtn" data-a="rules">📖 Règles</button>
+    <button class="btn small primary" data-a="menu">☰ Menu</button>
+  </div>
+  <div class="layout">
+    <aside class="col-moi">
+      <p class="side-t" style="margin-top:2px">Joueur actif</p>
+      <div class="card-p" id="moiBox"></div>
+    </aside>
+    <main class="col-board"><div class="board" id="board"></div></main>
+    <aside class="col-droite">
+      <div class="card-p dice-panel" style="margin-top:2px">
+        <div class="dp-turn" id="dpTurn"></div>
+        <div class="dice-wrap"><div class="dice" id="dice"></div></div>
+        <div class="dp-val" id="dpVal"></div>
+        <button class="btn primary xl wide" data-a="roll" id="rollBtn">🎲 Lancer le dé</button>
+        <div class="dp-info" id="dpInfo"></div>
+      </div>
+      <p class="side-t">Joueurs</p>
+      <div class="card-p" id="joueursBox"></div>
+      <details class="sit"><summary>Situation de Madame P</summary><p id="contexteJeu"></p></details>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= VICTOIRE ================= -->
+<section id="screen-win" class="screen">
+  <div class="win-wrap">
+    <div class="trophy">🏆</div>
+    <h2>Bravo <span id="winName"></span>&nbsp;!</h2>
+    <p class="sub">Carte Défi secrète complétée : victoire&nbsp;!</p>
+    <div class="win-grid">
+      <div id="winDefi"></div>
+      <div class="score-table" id="winTable"></div>
+    </div>
+    <div class="win-actions">
+      <button class="btn primary xl" data-a="replay">🔁 Nouvelle partie</button>
+      <button class="btn xl" data-a="reveal-all" id="revealAllBtn">👁 Révéler tous les objectifs</button>
+      <button class="btn xl" data-a="home">🏠 Accueil</button>
+    </div>
+  </div>
+</section>
+
+<!-- Carte question au-dessus du plateau -->
+<div class="qover" id="qover">
+  <div class="qwrap">
+    <div class="qtop">
+      <div class="timer" id="timer">
+        <svg viewBox="0 0 104 104">
+          <circle class="bgc" cx="52" cy="52" r="44" fill="none" stroke-width="10"/>
+          <circle id="ring" cx="52" cy="52" r="44" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="0"/>
+        </svg>
+        <div class="num" id="tnum">30</div>
+      </div>
+      <div class="consigne" id="consigne"></div>
+      <div class="qbtns"><button class="iconbtn" data-a="minq" id="minBtn">🗺️ Voir le plateau</button><button class="iconbtn" data-a="menu">☰ Menu</button></div>
+    </div>
+    <div id="qcard"></div>
+    <div id="qres"></div>
+    <div class="controls" id="qctrl"></div>
+  </div>
+</div>
+
+<!-- Passage de main -->
+<div class="handoff" id="handoff">
+  <div class="ho-in">
+    <div class="tirage" id="hoTirage" hidden></div>
+    <div class="ho-av" id="hoAv"></div>
+    <h2>Au tour de <span id="hoNom"></span></h2>
+    <p>Passez l'appareil à <b id="hoNom2"></b>. Les autres joueurs détournent le regard&nbsp;: son objectif secret va s'afficher.</p>
+    <p style="margin:22px 0 8px"><button class="btn primary xl" data-a="start-turn">👋 C'est moi, je joue</button></p>
+    <p style="font-size:.9rem;opacity:.7">Tour n°<span id="hoTour"></span></p>
+  </div>
+</div>
+
+<!-- Pause -->
+<div class="pausebox" id="pausebox">
+  <div class="ho-in">
+    <div style="font-size:4rem">⏸</div>
+    <h2>Partie en pause</h2>
+    <p>Le chronomètre et les déplacements sont arrêtés. Rien n'est perdu.</p>
+    <p style="margin-top:20px"><button class="btn primary xl" data-a="resume">▶ Reprendre la partie</button></p>
+  </div>
+</div>
+
+<div class="modal-back" id="modalBack"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+<canvas id="confetti"></canvas>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   1. DONNÉES DU JEU : contexte, couleurs, types
+   ===================================================================== */
+const CONTEXTE_CLINIQUE = "Madame P est accompagnée dans une démarche palliative. Elle est atteinte d'un cancer en phase terminale polymétastasée. Il y a des conflits de valeurs au sein de la famille de la patiente. Elle a souhaité arrêter ses traitements. Elle souhaite bénéficier d'un accompagnement selon ses souhaits.";
+const COULEURS = {
+  rouge:  {nom:"Rouge",  theme:"Pathologie",     hex:"#e5484d", ink:"#ffffff"},
+  bleu:   {nom:"Bleu",   theme:"Éthique",        hex:"#3b82f6", ink:"#ffffff"},
+  vert:   {nom:"Vert",   theme:"Législation",    hex:"#1f9d63", ink:"#ffffff"},
+  jaune:  {nom:"Jaune",  theme:"Soulagement",    hex:"#f2b200", ink:"#2b2100"},
+  violet: {nom:"Violet", theme:"Accompagnement", hex:"#8b5cf6", ink:"#ffffff"},
+  orange: {nom:"Orange", theme:"Équipe",         hex:"#f57c1f", ink:"#ffffff"}
+};
+const ORDRE = ["rouge","bleu","vert","jaune","violet","orange"];
+const TYPES = {
+  libre:"Réponse rédigée", definition:"Définition", qcm:"QCM · une réponse", qcmMulti:"QCM · plusieurs réponses",
+  vf:"Vrai ou faux", devinette:"Devinette", rebus:"Rébus", calcul:"Calcul", situation:"Mise en situation",
+  grille:"Mots croisés", ordre:"Priorisation", sigle:"Sigle", date:"Date", enigme:"Énigme",
+  terme:"Trouver le terme", juridique:"Question juridique", objectifs:"Objectifs", trous:"Texte à trous", champs:"Trouver le traitement"
+};
+const PION_COUL = ["#ffd166","#06d6a0","#7cc6fe","#ff8fab","#c4a1ff","#ffb86b"];
+const PION_EMO = ["🧑‍⚕️","👩‍⚕️","👨‍⚕️","🩺","🕊️","🌷","🦉","🌻","🐢","⭐"];
+const DUREE_QUESTION = 30000; // 30 secondes par carte
+
+/* =====================================================================
+   2. BANQUE DE QUESTIONS OFFICIELLE (six paquets distincts, inchangés)
+   ===================================================================== */
+const VF = [["vrai","Vrai"],["faux","Faux"]];
+const TONNEAU = `<svg viewBox="0 0 64 72" width="1em" height="1.1em" aria-label="tonneau" role="img" style="vertical-align:-.12em"><path d="M14 6 Q6 36 14 66 L50 66 Q58 36 50 6 Z" fill="#b5713a" stroke="#6b3d17" stroke-width="3"/><path d="M24 7 Q19 36 24 65 M40 7 Q45 36 40 65" stroke="#8a5126" stroke-width="2" fill="none"/><path d="M11 18 Q32 22 53 18 M9 36 Q32 40 55 36 M11 54 Q32 58 53 54" stroke="#4b4f57" stroke-width="5" fill="none"/></svg>`;
+
+/* ---------------- 🔴 PATHOLOGIE ---------------- */
+const PAQUET_ROUGE = [
+  {id:"R01", type:"libre", question:"Citez trois symptômes pénibles que peut présenter un patient en soins palliatifs.",
+   reponse:"Trois symptômes parmi :\n• nausées et vomissements\n• troubles digestifs : diarrhée, constipation\n• anxiété\n• dyspnée\n• mycose buccale ou mucite",
+   explication:"Toute combinaison correcte de trois symptômes est acceptée."},
+  {id:"R02", type:"trous", question:"Complétez le texte.",
+   texte:"La [[métastase|métastases]] est une nouvelle tumeur qui se forme lorsque les cellules cancéreuses se détachent de la tumeur primitive et se développent ailleurs.",
+   reponse:"Métastase (ou métastases).",
+   explication:"Les cellules quittent la tumeur primitive par voie sanguine ou lymphatique et forment un foyer secondaire dans un autre organe."},
+  {id:"R03", type:"devinette", question:"Je suis une cellule cancéreuse qui a quitté son lieu d'origine et suis allée m'installer ailleurs. Qui suis-je ?",
+   reponse:"Une métastase.",
+   explication:"« Métastases » est aussi accepté : c'est le même phénomène de dissémination à distance."},
+  {id:"R04", type:"rebus", question:"Quel mot se cache derrière ce rébus ?", rebus:["🏕️","🫎"],
+   reponse:"Cancer", explication:"Camp + cerf → « can-cer »."},
+  {id:"R05", type:"sigle", question:"Que signifie le sigle TNM ?",
+   reponse:"T : tumeur (primitive)\nN : ganglions lymphatiques régionaux (nodes)\nM : métastases à distance",
+   explication:"N correspond aux ganglions lymphatiques (de l'anglais « nodes »). La classification TNM décrit l'extension d'un cancer."},
+  {id:"R06", type:"trous", question:"Complétez la définition des soins palliatifs.",
+   texte:"Les soins palliatifs sont des soins [[actifs|actif]], [[continus|continu]], [[évolutifs|évolutif]], pratiqués par une équipe [[pluridisciplinaire|interdisciplinaire|multidisciplinaire|pluriprofessionnelle]], qui ont pour objectifs de prévenir et [[soulager|apaiser|atténuer]] la douleur et les autres symptômes dans le respect et la [[dignité]] de la personne soignée.",
+   reponse:"Actifs, continus, évolutifs, pluridisciplinaire, soulager, dignité.",
+   explication:"Les petites fautes d'orthographe et le singulier ou le pluriel sont acceptés. « Interdisciplinaire » ou « multidisciplinaire » sont acceptés pour « pluridisciplinaire »."},
+  {id:"R07", type:"qcm", question:"Quelles sont les quatre dimensions des soins palliatifs ?",
+   options:[["A","Psychologique, sociale, spirituelle et religieuse."],["B","Thérapeutique, médicale, physique et orthopédique."],["C","Préventive, curative, palliative et relationnelle."],["D","Éthique, sociologique, philosophique et scientifique."]],
+   bonnes:["A"], reponse:""},
+  {id:"R08", type:"champs", question:"Quel type de traitement correspond à chaque description ?",
+   champs:[
+     {texte:"Description A : « Il s'attaque directement à la cause de la maladie pour l'éliminer ou la détruire. Il cherche la guérison. »", acc:["curatif","curative","visee curative","guerison"], ref:"Traitement curatif"},
+     {texte:"Description B : « Il ne guérit pas la cause, mais il traite les symptômes pénibles comme la douleur, l'angoisse ou les nausées. Il améliore la qualité de vie. »", acc:["symptomatique","palliatif","palliative","visee palliative","de confort"], ref:"Traitement symptomatique (ou à visée palliative)"}],
+   reponse:"A : traitement curatif.\nB : traitement symptomatique ou à visée palliative.",
+   explication:"Pour la description B, « symptomatique » et « à visée palliative » sont tous deux acceptés."},
+  {id:"R09", type:"devinette", question:"Ils altèrent gravement la qualité de vie et regroupent des manifestations psychiques et physiques inconfortables. De quoi s'agit-il ?",
+   reponse:"Des symptômes réfractaires ou des symptômes pénibles.",
+   explication:"Les deux réponses sont acceptées."},
+  {id:"R10", type:"libre", question:"Donnez les signes du stade 2 de l'escarre.",
+   reponse:"• Plaie superficielle\n• Phlyctène\n• Perte partielle de peau\n• Douleur possible au niveau de la lésion",
+   explication:"Deux éléments parmi ces quatre suffisent."},
+  {id:"R11", type:"objectifs", question:"Quels sont les objectifs des traitements en soins palliatifs ?",
+   reponse:"Améliorer ou maintenir le confort et la qualité de vie, et soulager les symptômes."},
+  {id:"R12", type:"vf", question:"Les soins palliatifs concernent uniquement les personnes dans leurs derniers jours de vie.",
+   options:VF, bonnes:["faux"], reponse:"Faux.",
+   explication:"Les soins palliatifs peuvent être mis en place plus tôt dans l'évolution d'une maladie grave, selon les besoins de la personne."}
+];
+
+/* ---------------- 🔵 ÉTHIQUE ---------------- */
+const PAQUET_BLEU = [
+  {id:"B01", type:"situation", question:"Il est 8 h. Mme P refuse sa toilette. Que faites-vous ?",
+   reponse:"• Respecter son refus\n• Dialoguer avec elle pour comprendre sa décision\n• Proposer de reporter la toilette à un autre moment de la journée",
+   explication:"Toute réponse qui respecte l'autonomie de Mme P et propose une adaptation est acceptée."},
+  {id:"B02", type:"vf", question:"Le personnel de culte ne peut pas intervenir en soins palliatifs.",
+   options:VF, bonnes:["faux"], reponse:"Faux.",
+   explication:"Un représentant du culte peut intervenir si le patient le souhaite, dans le respect de ses convictions et de son consentement."},
+  {id:"B03", type:"devinette", question:"Qui suis-je ?", indicesProgressifs:true,
+   indices:["Indice 1 : Elle permet d'agir sans avoir constamment besoin d'aide.","Indice 2 : Elle est liée à la liberté de choisir et de décider.","Indice 3 : Son contraire est la dépendance."],
+   reponse:"L'autonomie.", explication:"« Autonomie de la personne » ou une formulation équivalente est acceptée."},
+  {id:"B04", type:"rebus", question:"Quel mot se cache derrière ce rébus ?", rebus:["💧", TONNEAU, "🍞"],
+   reponse:"Autonomie", explication:"Goutte d'eau + tonneau + mie de pain → « eau-tonneau-mie » : au-to-no-mie."},
+  {id:"B05", type:"qcmMulti", question:"Si la famille n'est pas d'accord avec le patient, que faire ?",
+   options:[["A","Écouter la famille."],["B","Respecter les choix du patient."],["C","Faire ce que veut la famille."],["D","En parler avec l'équipe soignante."]],
+   bonnes:["A","B","D"], reponse:"",
+   explication:"On écoute les proches et on en parle en équipe, mais ce sont les choix du patient qui priment."},
+  {id:"B06", type:"vf", question:"Respecter l'autonomie, c'est laisser le patient seul face à ses décisions.",
+   options:VF, bonnes:["faux"], reponse:"Faux.",
+   explication:"Respecter l'autonomie, c'est informer, écouter et accompagner la personne, sans décider systématiquement à sa place."},
+  {id:"B07", type:"vf", question:"Un patient peut refuser un soin, même si le professionnel pense que ce soin est bénéfique.",
+   options:VF, bonnes:["vrai"], reponse:"Vrai.",
+   explication:"Le refus doit être entendu, et les conséquences éventuelles expliquées au patient. Les situations particulières s'apprécient selon le cadre légal applicable."},
+  {id:"B08", type:"qcmMulti", question:"Qu'est-ce qui peut participer au respect de la dignité d'une personne ?",
+   options:[["A","Respecter son intimité."],["B","Respecter ses choix."],["C","Prendre en compte ses croyances."],["D","Toutes les réponses."]],
+   bonnes:["D"], bonnesAlt:[["A","B","C"],["A","B","C","D"]], reponse:"",
+   explication:"Les trois propositions participent au respect de la dignité. Cocher D, ou cocher A, B et C, est accepté."},
+  {id:"B09", type:"qcmMulti", question:"Le consentement du patient doit être :",
+   options:[["A","Libre."],["B","Éclairé."],["C","Engagé."],["D","Protégé."]],
+   bonnes:["A","B"], reponse:"",
+   explication:"Le consentement doit être libre (sans contrainte ni pression) et éclairé (après une information claire et adaptée). « Engagé » et « protégé » ne sont pas les qualités attendues ici."}
+];
+
+/* ---------------- 🟢 LÉGISLATION ---------------- */
+const PAQUET_VERT = [
+  {id:"V01", type:"qcm", question:"Mme B est inconsciente, sans espoir d'amélioration, et les traitements ne font que prolonger artificiellement sa vie. Quelle notion juridique cette situation évoque-t-elle ?",
+   options:[["A","Le consentement libre et éclairé."],["B","L'obstination déraisonnable."],["C","Le secret professionnel."],["D","La personne de confiance."]],
+   bonnes:["B"], reponse:"",
+   explication:"Des traitements inutiles, disproportionnés ou qui n'ont d'autre effet que le maintien artificiel de la vie relèvent de l'obstination déraisonnable, que la loi interdit."},
+  {id:"V02", type:"devinette", question:"Je ne tue pas.\nJe ne soigne plus.\nJe ne laisse pas tomber.\nJe mets simplement une limite.\nLa loi m'autorise lorsque poursuivre n'apporte plus de bénéfice au patient.\nQui suis-je ?",
+   reponse:"La limitation des thérapeutiques.",
+   explication:"« Limitation ou arrêt des traitements » (LAT, LATA) est aussi accepté. Ce n'est ni une euthanasie ni une aide à mourir : on arrête ce qui n'apporte plus de bénéfice, et les soins de confort continuent."},
+  {id:"V03", type:"libre", question:"Donnez les trois grands principes de la loi relative aux droits des malades et à la fin de vie.",
+   reponse:"Principes principaux :\n• le respect de la dignité du patient\n• le refus de l'obstination déraisonnable\n• le respect de la volonté du patient\n\nAutres notions du cours :\n• les directives anticipées\n• la personne de confiance\n• le soulagement de la souffrance\n• le droit à la sédation profonde et continue jusqu'au décès, dans les conditions prévues par la loi",
+   explication:"Trois notions exactes suffisent : il n'est pas nécessaire de citer toute la liste.",},
+  {id:"V04", type:"rebus", question:"Quelle loi se cache derrière ce rébus ?", rebus:["🪿","🔑","’s","🥛","💧","👃🏼","ti"],
+   reponse:"Loi Claeys-Leonetti",
+   explication:"L'oie + clé + 's → « loi Claeys » ; lait + eau + nez + ti → « Leonetti ». La loi du 2 février 2016 renforce les droits des malades et des personnes en fin de vie, notamment en encadrant la sédation profonde et continue jusqu'au décès."},
+  {id:"V05", type:"juridique", question:"Quelles sont les cinq conditions d'accès au droit à l'aide à mourir ?",
+   reponse:"1. Avoir au moins 18 ans.\n2. Être de nationalité française ou résider de façon stable et régulière en France.\n3. Être atteint d'une affection grave et incurable qui engage le pronostic vital, en phase avancée ou terminale.\n4. Présenter une souffrance liée à cette affection, réfractaire aux traitements ou insupportable.\n5. Être apte à manifester sa volonté de façon libre et éclairée.",
+   explication:"Loi n° 2026-794 du 18 août 2026 relative au droit à l'aide à mourir (JO du 19 août 2026). Les cinq conditions sont cumulatives. Une souffrance psychologique seule ne permet pas d'y accéder. Les formulations du cours (« être majeur », « avoir un lien légal avec la France ») sont acceptées.",},
+  {id:"V06", type:"qcm", question:"Les directives anticipées permettent à une personne :",
+   options:[["A","De désigner son médecin."],["B","D'exprimer ses volontés concernant sa fin de vie."],["C","De demander automatiquement une euthanasie."],["D","De choisir son infirmière."]],
+   bonnes:["B"], reponse:"",
+   explication:"Elles servent à faire connaître ses souhaits sur la fin de vie, notamment la poursuite, la limitation ou l'arrêt des traitements, au cas où l'on ne pourrait plus s'exprimer."},
+  {id:"V07", type:"devinette", question:"Je suis une procédure prévue par la loi.\nJe fais intervenir l'équipe de soins.\nUn médecin consultant donne un avis motivé.\nJe peux être nécessaire avant une limitation ou un arrêt de traitement.\nQui suis-je ?",
+   reponse:"La procédure collégiale."},
+  {id:"V08", type:"libre", question:"Quel est le rôle de la personne de confiance ?",
+   reponse:"• Accompagner le patient dans ses démarches s'il le souhaite\n• L'aider dans sa réflexion pour prendre ses décisions\n• Être consultée par l'équipe si le patient est hors d'état d'exprimer sa volonté\n• Témoigner des volontés du patient et rapporter ce qu'il aurait souhaité",
+   explication:"Elle accompagne et témoigne. Elle ne détient pas de pouvoir général de décision à la place du patient."},
+  {id:"V09", type:"vf", question:"La sédation profonde et continue jusqu'au décès a comme intention de répondre à la demande de mort du patient.",
+   options:VF, bonnes:["faux"], reponse:"Faux.",
+   explication:"Son objectif est de soulager une souffrance réfractaire, dans les conditions prévues par la loi, et non de provoquer la mort."},
+  {id:"V10", type:"vf", question:"L'euthanasie a comme intention de soulager une souffrance réfractaire.",
+   options:VF, bonnes:["faux"], reponse:"Faux.",
+   explication:"Il faut distinguer l'intention, l'acte et le cadre juridique.\n• L'intention : l'euthanasie vise à provoquer délibérément la mort pour mettre fin aux souffrances. La sédation profonde et continue vise à soulager une souffrance réfractaire en altérant la conscience, sans intention de provoquer le décès.\n• L'acte : la sédation utilise des sédatifs à doses adaptées, pas une substance à dose létale.\n• Le cadre juridique : la loi française n'emploie pas le mot « euthanasie ». La sédation relève de la loi Claeys-Leonetti de 2016. La loi du 18 août 2026 crée une « aide à mourir » strictement encadrée, avec auto-administration de la substance, ou administration par un médecin ou un infirmier si la personne n'en est physiquement pas capable.",},
+  {id:"V11", type:"vf", question:"L'utilisation d'un médicament à dose létale permet la sédation profonde et continue jusqu'au décès.",
+   options:VF, bonnes:["faux"], reponse:"Faux.",
+   explication:"La sédation profonde et continue repose sur des médicaments et des modalités destinés à obtenir une sédation, dans les conditions médicales et légales applicables. Elle ne repose pas sur une dose létale visant à provoquer la mort."},
+  {id:"V12", type:"devinette", question:"Je suis un document rédigé à l'avance pour faire connaître les volontés d'une personne concernant sa fin de vie. Qui suis-je ?",
+   reponse:"Les directives anticipées."},
+  {id:"V13", type:"vf", question:"La personne de confiance décide à la place du patient.",
+   options:VF, bonnes:["faux"], reponse:"Faux.",
+   explication:"Tant que le patient peut exprimer sa volonté, il décide lui-même. S'il n'est plus en état de s'exprimer, la personne de confiance témoigne de ses volontés et elle est consultée selon les règles applicables. Elle ne reçoit pas pour autant un pouvoir général de décision."}
+];
+
+/* ---------------- 🟡 SOULAGEMENT ---------------- */
+const NOTE_CALCUL = "Question pédagogique : la réponse ne constitue pas une instruction d'administration réelle. En pratique, toute préparation et toute administration suivent la prescription, le protocole local et les vérifications infirmières requises.";
+const PAQUET_JAUNE = [
+  {id:"J01", type:"calcul", question:"Prescription médicale : 5 mg de morphine IV.\nAmpoule : 10 mg/ml.\nQuel volume faut-il administrer ?",
+   reponse:"0,5 ml", calcul:"Volume (ml) = dose prescrite (mg) ÷ concentration (mg/ml)\n5 mg ÷ 10 mg/ml = 0,5 ml", explication:NOTE_CALCUL},
+  {id:"J02", type:"calcul", question:"Après dilution, la concentration de morphine est de 1 mg/ml.\nPrescription médicale : 3 mg IV.\nQuel volume faut-il administrer ?",
+   reponse:"3 ml", calcul:"Volume (ml) = dose prescrite (mg) ÷ concentration (mg/ml)\n3 mg ÷ 1 mg/ml = 3 ml", explication:NOTE_CALCUL},
+  {id:"J03", type:"devinette", question:"Je suis l'antidote de la morphine. Qui suis-je ?",
+   reponse:"La naloxone (Narcan).",
+   explication:"La naloxone est un antagoniste des opioïdes, utilisée en cas de surdosage ou de dépression respiratoire."},
+  {id:"J04", type:"vf", question:"La morphine peut provoquer de la constipation.",
+   options:VF, bonnes:["vrai"], reponse:"Vrai.",
+   explication:"La constipation est très fréquente sous morphine et ne s'atténue pas avec le temps : un traitement laxatif est souvent associé dès le début."},
+  {id:"J05", type:"libre", question:"Donnez trois effets indésirables possibles de la morphine.",
+   reponse:"Trois éléments parmi :\n• dépression ou détresse respiratoire\n• constipation\n• somnolence\n• nausées\n• vomissements\n• sécheresse buccale\n• agitation\n• rétention urinaire\n• réaction allergique",
+   explication:"Effets fréquents : constipation, nausées et vomissements, somnolence, sécheresse buccale. Effet grave : la dépression respiratoire, qui demande une vigilance particulière (fréquence respiratoire, vigilance, saturation)."},
+  {id:"J06", type:"libre", question:"Quand faire un soin de bouche ?",
+   reponse:"À la demande du patient, selon ses besoins, dans le cadre du rôle propre infirmier ou sur prescription lorsque cela est nécessaire."},
+  {id:"J07", type:"libre", question:"Pourquoi faire un soin de bouche ?",
+   reponse:"• Prévenir ou limiter les troubles liés à l'alimentation et à l'hydratation\n• Améliorer le confort buccal\n• Faciliter la communication\n• Participer au confort et au respect de la dignité"},
+  {id:"J08", type:"libre", question:"Quels soins non médicamenteux peuvent être proposés en soins palliatifs ?",
+   reponse:"• Aromathérapie\n• Balnéothérapie\n• Toucher-massage\n• Intervention d'une socio-esthéticienne\n• Musicien ou musicothérapie, selon le dispositif\n• Hypnose\n• Lunettes de réalité virtuelle",
+   explication:"Au moins trois exemples pertinents sont attendus."},
+  {id:"J09", type:"libre", question:"Quelles adaptations alimentaires peuvent être proposées aux patients en soins palliatifs ?",
+   reponse:"• Alimentation plaisir\n• Aliments froids s'ils sont mieux tolérés\n• Présentation soignée de l'assiette\n• Horaires non imposés, adaptés au rythme et aux souhaits du patient",
+   explication:"Toute adaptation au confort, aux préférences et aux capacités de la personne est acceptée."},
+  {id:"J10", type:"qcmMulti", question:"Quelles propositions peuvent participer au bien-être d'un patient en soins palliatifs ?",
+   options:[["A","Massage."],["B","Musique."],["C","Aromathérapie."],["D","Socio-esthétique."]],
+   bonnes:["A","B","C","D"], reponse:"",
+   explication:"Toutes ces approches peuvent être proposées, selon les souhaits du patient et les possibilités du service."}
+];
+
+/* ---------------- 🟣 ACCOMPAGNEMENT ---------------- */
+const PAQUET_VIOLET = [
+  {id:"P01", type:"libre", question:"Comment s'organise une journée en soins palliatifs ?",
+   reponse:"Il n'y a pas de journée type : l'organisation est adaptée au patient, à ses besoins, à son rythme et à ses souhaits."},
+  {id:"P02", type:"qcmMulti", titre:"Mise en situation · plusieurs réponses",
+   question:"Il est 9 h. Mme P a des douleurs évaluées à 4/10. Vous n'avez pas de prescription médicale pour administrer un antalgique. Que pouvez-vous faire pour soulager Mme P ?",
+   options:[["A","Je lui propose un changement de position."],["B","Je lui propose une poche de froid ou de chaud."],["C","J'appelle le médecin."],["D","Je lui dis : « Je ne peux rien vous administrer pour le moment, je repasse à 12 h. »"]],
+   bonnes:["A","B","C"], reponse:"",
+   explication:"Évaluer la douleur, proposer des mesures non médicamenteuses adaptées et solliciter le médecin pour réévaluer la situation et décider de la conduite à tenir. Le chaud ou le froid ne se propose que si c'est adapté à la situation clinique et sans risque pour la patiente."},
+  {id:"P03", type:"ordre",
+   contexte:"Un patient présente une douleur à 8/10 et un autre une saturation à 88 % avec des signes de détresse respiratoire. Un troisième a besoin qu'on refasse son pansement hémostatique : il ne s'agit pas d'une hémorragie active ni d'une situation immédiatement menaçante.",
+   question:"Dans quel ordre prioriser les soins ? Touchez les actions dans l'ordre.",
+   options:[["1","Refaire un pansement hémostatique."],["2","Prendre en soin un patient en détresse respiratoire."],["3","Administrer un antalgique prescrit à un patient ayant une échelle numérique de douleur à 8/10."]],
+   bonnes:["2","3","1"], reponse:"2 → 3 → 1 : la détresse respiratoire, puis la douleur à 8/10, puis le pansement.",
+   explication:"Dans ce scénario, la détresse respiratoire passe en premier. Une hémorragie active, elle, pourrait être immédiatement vitale et changerait l'ordre. Le classement dépend du contexte clinique : l'énoncé précise que le pansement ne correspond pas à une hémorragie active."},
+  {id:"P04", type:"libre", question:"Quels sont les horaires de visite en soins palliatifs ?",
+   reponse:"Les horaires sont souvent souples, voire libres, selon l'organisation de l'établissement, les souhaits du patient et les règles du service.",
+   explication:"L'absence d'horaires fixes n'est pas une règle universelle : elle dépend de chaque établissement."},
+  {id:"P05", type:"grille", question:"Complétez la grille de mots croisés.",
+   grille:{rows:4, cols:8, mots:[
+     {num:1, dir:"h", r:0, c:0, mot:"RELATION", indice:"Lien qui existe entre deux personnes."},
+     {num:2, dir:"v", r:0, c:3, mot:"AIDE", indice:"Action de soutenir une personne."}]},
+   reponse:"1 horizontal : RELATION\n2 vertical : AIDE", explication:"Ensemble : la relation d'aide."},
+  {id:"P06", type:"qcmMulti", question:"Quelle place donner à la famille dans les soins palliatifs ?",
+   options:[["A","Écouter et soutenir la famille."],["B","Respecter ses croyances."],["C","La laisser participer si le patient le souhaite."],["D","Ne pas prendre en compte son avis."],["E","L'informer de la situation du patient."]],
+   bonnes:["A","B","C","E"], reponse:"",
+   explication:"Accompagner les proches, respecter leurs croyances et leur place, en tenant compte de la volonté du patient, du secret professionnel et des règles de partage des informations."},
+  {id:"P07", type:"libre", question:"Quelle activité proposez-vous à un patient fatigué ?",
+   reponse:"La musique, par exemple écouter une musique qu'il apprécie.",
+   explication:"Une proposition équivalente, calme et adaptée à sa fatigue, est acceptée."},
+  {id:"P08", type:"vf", question:"Une toilette doit toujours être réalisée même si le patient est épuisé.",
+   options:VF, bonnes:["faux"], reponse:"Faux.",
+   explication:"On adapte les soins au rythme, à la fatigue, au confort et aux souhaits de la personne, et on reporte ou on aménage le soin quand c'est possible et approprié."},
+  {id:"P09", type:"devinette", question:"Je suis une manière d'accompagner basée sur l'écoute, l'empathie et le respect de la personne. Qui suis-je ?",
+   reponse:"La relation d'aide.", explication:"« Relation d'aide en soins » ou une formulation équivalente est acceptée."}
+];
+
+/* ---------------- 🟠 ÉQUIPE ---------------- */
+const PAQUET_ORANGE = [
+  {id:"O01", type:"libre", question:"Citez cinq professionnels participant à la prise en soins en soins palliatifs, autres que IDE, aide-soignant, ASH, médecin, psychologue et assistante sociale.",
+   reponse:"Cinq parmi : ergothérapeute, orthophoniste, psychomotricien, kinésithérapeute, socio-esthéticienne, addictologue, bénévoles d'accompagnement, représentant du culte, secrétaire, cadre de santé, musicien, pédicure-podologue.",
+   explication:"D'autres professionnels qui participent réellement à l'accompagnement sont acceptés (diététicien, pharmacien, art-thérapeute…). Les professions exclues par la question ne comptent pas."},
+  {id:"O02", type:"libre", question:"Quel professionnel peut intervenir auprès des proches pour les soutenir psychologiquement ?",
+   reponse:"Le psychologue.", explication:"« Psychologue de l'équipe » ou une formulation équivalente est acceptée."},
+  {id:"O03", type:"libre", question:"Quel est le rôle principal de l'orthophoniste dans la prise en soins palliative ?",
+   reponse:"• Accompagner les difficultés de déglutition\n• Contribuer à maintenir ou adapter les capacités de communication",
+   explication:"Une réponse qui mentionne la déglutition ou la communication est acceptée."},
+  {id:"O04", type:"libre", question:"Quel est le rôle principal du kinésithérapeute en soins palliatifs ?",
+   reponse:"Maintenir autant que possible la mobilité, le confort et les capacités fonctionnelles de la personne, selon ses souhaits et son état."},
+  {id:"O05", type:"devinette", question:"Deux énoncés, une même réponse. Qui suis-je ?",
+   indices:["Énoncé A : On fait appel à moi afin de réaliser des soins de bien-être et de beauté. Mon intervention influence positivement les relations sociales et familiales des patients.","Énoncé B : J'interviens sur le bien-être et l'image de soi."],
+   reponse:"La socio-esthéticienne (ou le socio-esthéticien)."},
+  {id:"O06", type:"devinette", question:"Deux énoncés, une même réponse. Qui suis-je ?",
+   indices:["Énoncé A : Je sécurise le parcours de vie des patients, soutiens les proches et contribue à l'accès aux droits et aux aides dans une période de grande vulnérabilité.","Énoncé B : J'accompagne le patient, soutiens ses proches et contribue à l'accès aux droits."],
+   reponse:"L'assistante sociale.", explication:"« Assistant de service social » ou « travailleur social » sont acceptés."},
+  {id:"O07", type:"qcmMulti", question:"Que signifie être empathique avec une famille ?",
+   options:[["A","Comprendre ce qu'elle ressent."],["B","Se moquer de ses émotions."],["C","Être à l'écoute."],["D","Respecter ses sentiments."]],
+   bonnes:["A","C","D"], reponse:"",
+   explication:"L'empathie, c'est comprendre ce que l'autre ressent et l'écouter avec respect, sans jugement."},
+  {id:"O08", type:"libre", question:"Quelles constantes peuvent être surveillées en soins palliatifs ?",
+   reponse:"La température et la saturation en oxygène.",
+   explication:"D'autres paramètres peuvent être surveillés selon les symptômes, les objectifs de soins, la prescription et le confort du patient (fréquence respiratoire, douleur…). Pas de surveillance systématique imposée : elle s'adapte aux objectifs de la prise en charge."},
+  {id:"O09", type:"trous", question:"Complétez la phrase.",
+   texte:"Les [[transmissions|transmission]] entre professionnels permettent d'assurer la continuité des soins.",
+   reponse:"Transmissions."},
+  {id:"O10", type:"qcmMulti", question:"Quels éléments sont importants dans le travail en équipe ?",
+   options:[["1","La communication."],["2","Les transmissions."],["3","La coordination."],["4","Toutes les réponses."]],
+   bonnes:["4"], bonnesAlt:[["1","2","3"],["1","2","3","4"]], reponse:"",
+   explication:"Les trois éléments comptent. Cocher 4, ou cocher 1, 2 et 3, est accepté."}
+];
+
+const BANQUE = {rouge:PAQUET_ROUGE, bleu:PAQUET_BLEU, vert:PAQUET_VERT, jaune:PAQUET_JAUNE, violet:PAQUET_VIOLET, orange:PAQUET_ORANGE};
+const CARTE_PAR_ID = {};
+const TOUTES = [];
+ORDRE.forEach(c => BANQUE[c].forEach(card => {
+  card.couleur = c; card.categorie = COULEURS[c].theme;
+  if (CARTE_PAR_ID[card.id]) console.warn("Identifiant en double :", card.id);
+  CARTE_PAR_ID[card.id] = card; TOUTES.push(card);
+}));
+
+/* =====================================================================
+   3. CORRECTION AUTOMATIQUE DES RÉPONSES ÉCRITES
+   Pour chaque question rédigée : éléments attendus (le 1er mot est l'intitulé
+   affiché, les suivants sont des variantes acceptées) et nombre minimum à citer.
+   Pour les calculs : valeur numérique attendue et unité.
+   ===================================================================== */
+const CORRECTION = {
+  R01:{min:3, cles:[["nausées","nausee"],["vomissements","vomi"],["diarrhée","diarrhe"],["constipation","constip","transit"],["anxiété","anxi","angoiss","stress","peur"],["dyspnée","dyspn","essouffl","souffle court","difficulte a respirer","difficultes a respirer","difficulte respiratoire","difficultes respiratoires","manque d air"],["mycose buccale ou mucite","mycose","mucite","muguet","candidose","bouche seche","secheresse buccale","xerostomie"],["douleur","douleur","douloureu"],["fatigue / asthénie","fatigue","asthenie","epuisement"],["perte d'appétit","anorexie","appetit"],["confusion / agitation","confusion","agitation","delire","delirium"],["insomnie","insomnie","troubles du sommeil"],["prurit","prurit","demangeaison"],["hoquet","hoquet"],["encombrement","encombrement","rales","toux"]]},
+  R03:{min:1, cles:[["métastase","metasta"]]},
+  R04:{min:1, cles:[["cancer","cancer"]]},
+  R05:{min:3, cles:[["T : tumeur","tumeur","tumor","taille"],["N : ganglions lymphatiques (nodes)","ganglion","lymph","node","nodule","adenopathie"],["M : métastases","metasta"]]},
+  R09:{min:1, cles:[["symptômes pénibles","penible"],["symptômes réfractaires","refractaire","rebelle"]]},
+  R10:{min:2, cles:[["plaie superficielle","superficiel","abrasion","erosion","epiderme","derme","ulceration"],["phlyctène","phlyctene","bulle","ampoule","cloque","vesicule"],["perte partielle de peau","partiel"],["douleur possible au niveau de la lésion","douleur","douloureu"]]},
+  R11:{min:2, cles:[["confort","confort","bien etre"],["qualité de vie","qualite de vie","qualite"],["soulager les symptômes","soulag","symptome","douleur","apais"]]},
+  B01:{min:2, cles:[["respecter son refus","respect","accept","consentement","volonte","choix","entendre son refus"],["dialoguer pour comprendre","dialog","discut","comprendre","pourquoi","raison","ecout","demander","echang","questionn","motif"],["proposer un autre moment","plus tard","autre moment","differ","report","repropos","repasser","revenir","ulterieur","decaler","autre heure"]],
+       non:[{p:["forcer","obliger","contraindre","quand meme","imposer"], m:"On ne force pas un soin refusé : le refus de la patiente doit être respecté."}]},
+  B03:{min:1, cles:[["autonomie","autonom","independan"]]},
+  B04:{min:1, cles:[["autonomie","autonom"]]},
+  V02:{min:1, cles:[["limitation des thérapeutiques","limit","arret","=lat","=lata","desescalade","abstention"],["refus de l'obstination déraisonnable","obstination","acharnement"]],
+       non:[{p:["euthanasie","suicide assiste","aide a mourir","aide active a mourir"], m:"La limitation des thérapeutiques n'est ni une euthanasie ni une aide à mourir."}]},
+  V03:{min:3, cles:[["respect de la dignité","dignite"],["refus de l'obstination déraisonnable","obstination","acharnement"],["respect de la volonté du patient","volonte","souhait","autonomie","consentement","refus de traitement"],["directives anticipées","directive","=da"],["personne de confiance","personne de confiance"],["soulagement de la souffrance","soulag","souffrance","douleur"],["sédation profonde et continue","sedation","=sdpc","=spcjd"]]},
+  V04:{min:1, cles:[["loi Claeys-Leonetti","claeys","leonetti","clayes","leoneti","leonnetti"]]},
+  V05:{min:5, cles:[["être majeur (18 ans)","majeur","18 ans","adulte","plus de 18"],["nationalité française ou résidence stable et régulière en France","nationalit","francais","resid","lien legal","titre de sejour","vivre en france","habiter en france"],["affection grave et incurable","incurable","maladie grave","affection grave","pathologie grave","pronostic vital","phase avancee","phase terminale"],["souffrance liée à l'affection, réfractaire ou insupportable","souffr","insupportable","refractaire"],["volonté libre et éclairée","volonte","libre et eclaire","eclaire","discernement","consentement","apte","capable","lucide"]],
+       non:[{p:["mineur"], m:"L'aide à mourir est réservée aux personnes d'au moins 18 ans."}]},
+  V07:{min:1, cles:[["procédure collégiale","collegial","college","concertation"]]},
+  V08:{min:1, cles:[["accompagner le patient dans ses démarches","accompagn","demarche","entretien","rendez vous","consultation"],["l'aider dans sa réflexion pour décider","aider a decider","aide a la decision","aider dans ses decisions","reflexion","soutenir"],["être consultée si le patient ne peut plus s'exprimer","consulte","hors d etat","ne peut plus","inconscient"],["témoigner des volontés du patient","temoign","volonte","souhait","porte parole","rapporte","exprime","transmet","relai","relaye","voix du patient","represente"]],
+       non:[{p:["decide a sa place","decider a sa place","decide a la place","decider a la place","prend les decisions a sa place","choisit a sa place","choisir a sa place"], m:"La personne de confiance ne décide pas à la place du patient : elle témoigne de ses volontés."}]},
+  V12:{min:1, cles:[["directives anticipées","directive","=da"]]},
+  J01:{num:0.5, unite:"ml"},
+  J02:{num:3, unite:"ml"},
+  J03:{min:1, cles:[["naloxone (Narcan)","naloxone","narcan","nalox"]],
+       non:[{p:["flumazenil","anexate"], m:"Le flumazénil (Anexate) est l'antidote des benzodiazépines, pas de la morphine."}]},
+  J05:{min:3, cles:[["dépression respiratoire","depression respi","detresse respi","respiratoire","bradypn","apnee","ralentissement respiratoire"],["constipation","constip"],["somnolence","somnol","endorm","sedation","assoupi"],["nausées","nausee"],["vomissements","vomi"],["sécheresse buccale","secheresse","bouche seche","xerost"],["agitation","agitation","confusion","hallucin","delire"],["rétention urinaire","retention","globe"],["réaction allergique","allerg","prurit","demange"],["myosis","myosis"],["hypotension","hypotension"]]},
+  J06:{min:1, cles:[["selon les besoins","besoin","necessaire","inconfort","bouche seche","secheresse","etat de la bouche","evaluation"],["à sa demande","demande","souhait","envie"],["rôle propre ou prescription","role propre","prescri","protocole"],["régulièrement","regulier","plusieurs fois","quotidien","apres les repas","apres chaque repas"]]},
+  J07:{min:2, cles:[["troubles liés à l'alimentation et à l'hydratation","aliment","manger","hydrat","boire","deglut"],["confort buccal","confort","bien etre"],["faciliter la communication","communic","parler","parole"],["dignité","dignite","image de soi"],["prévenir la sécheresse et les lésions","seche","lesion","mucite","mycose","infection","hygien","preven","plaie"],["goût, haleine","gout","haleine","halitose","odeur","plaisir"]]},
+  J08:{min:3, cles:[["aromathérapie","aromath","huile essentielle"],["balnéothérapie","balneo","bain"],["toucher-massage","toucher","massage","effleurage"],["socio-esthétique","esthet"],["musique / musicothérapie","musique","musicien","musicoth"],["hypnose / relaxation","hypno","relax","sophro","meditation"],["réalité virtuelle","realite virtuelle","lunettes","casque"],["installation, positionnement","installation","position","coussin"],["chaud / froid","bouillotte","poche de froid","poche de glace","chaleur"]]},
+  J09:{min:1, cles:[["alimentation plaisir","plaisir","envie","gout","prefer"],["aliments froids","froid","glace"],["présentation de l'assiette","present","assiette"],["horaires non imposés","horaire","rythme","moment","a la demande"],["petites portions","petite","fractionn","portion","collation"],["textures adaptées","texture","mixe","hache","mouline"]]},
+  P01:{min:1, cles:[["pas de journée type, adaptée au patient","journee type","adapt","rythme","besoin","souhait","flexib","individual","personnalis","au cas par cas"]]},
+  P04:{min:1, cles:[["horaires souples ou libres","souple","libre","flexib","elargi","pas d horaire","sans horaire","aucun horaire","a toute heure","24h","24 h","jour et nuit","illimit","adapt","selon le patient","selon le service","selon l etablissement","selon les souhaits"]],
+       non:[{p:["strict","rigide","horaires fixes","comme dans les autres services"], m:"En soins palliatifs, les horaires de visite sont souvent souples ou libres, selon l'établissement."}]},
+  P07:{min:1, cles:[["musique","musique","musicoth","chanson","radio"],["lecture","lecture","lire","livre"],["relaxation, toucher-massage","relax","massage","toucher","aromath","sophro"]]},
+  P09:{min:1, cles:[["relation d'aide","relation d aide","relation daide"]]},
+  O01:{min:5, cles:[["ergothérapeute","ergo"],["orthophoniste","orthophon"],["psychomotricien","psychomot"],["kinésithérapeute","kine"],["socio-esthéticienne","esthet"],["addictologue","addicto"],["bénévoles","benevol"],["représentant du culte","culte","aumon","pretre","imam","rabbin","pasteur"],["secrétaire","secretaire"],["cadre de santé","cadre"],["musicien","musicien","musicoth"],["pédicure-podologue","pedicure","podolog"],["diététicien","dieteti","nutrition"],["pharmacien","pharmacien"],["art-thérapeute","art therap","arttherap"],["sophrologue","sophrolog"]]},
+  O02:{min:1, cles:[["psychologue","psycholog","=psy"]]},
+  O03:{min:1, cles:[["difficultés de déglutition","deglut","avaler","fausse route","aliment","repas"],["communication","communic","parole","langage","parler","voix","elocution"]]},
+  O04:{min:1, cles:[["mobilité","mobilit","mobilis","mouvement","marche","deplac","verticalis"],["confort","confort","douleur","detente","massage"],["capacités fonctionnelles","fonction","autonomie","capacit"],["respiration","respir","encombr","drainage"]]},
+  O05:{min:1, cles:[["socio-esthéticienne","esthet"]]},
+  O06:{min:1, cles:[["assistante sociale","assistant social","assistante social","service social","travailleur social","travailleuse social","social"]]},
+  O08:{min:2, cles:[["température","temperat","=t"],["saturation en oxygène","saturat","=spo2","=sao2","=sat","oxyg"],["fréquence respiratoire","frequence respi","respiratoire","=fr"],["fréquence cardiaque","frequence card","pouls","cardiaque","=fc"],["tension artérielle","tension","pression arter","=ta","=pa"],["douleur","douleur","=eva","=evs","algoplus","doloplus"],["conscience, vigilance","conscience","vigilance","glasgow"],["diurèse","diurese","urine"]]}
+};
+
+/* ---------- Moteur de correction : normalisation, synonymes, tolérance orthographique ---------- */
+function motsDe(s){ return normaliser(s).replace(/[\-']/g," ").split(/\s+/).filter(Boolean); }
+function levenshtein(a, b){
+  if (a === b) return 0;
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({length:n+1}, (_,j)=>j);
+  for (let i=1;i<=m;i++){
+    const cur = [i];
+    for (let j=1;j<=n;j++) cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1] + (a[i-1]===b[j-1]?0:1));
+    prev = cur;
+  }
+  return prev[n];
+}
+/* Un mot de la réponse correspond-il à un mot attendu ? (préfixe, ou faute de frappe tolérée sur les mots longs) */
+function motProche(tok, w, exact){
+  if (exact || w.length <= 2) return tok === w;
+  if (tok.startsWith(w)) return true;
+  if (w.length >= 5){
+    const tol = w.length >= 8 ? 2 : 1;
+    if (levenshtein(tok.slice(0, w.length), w) <= tol) return true;
+    if (tok.length >= w.length - 1 && levenshtein(tok, w) <= tol) return true;
+  }
+  return false;
+}
+/* Recherche d'une expression (un ou plusieurs mots). « =mot » impose une correspondance exacte (abréviations). */
+function chercher(toks, brut, expr){
+  const exact = expr.startsWith("=");
+  const e = exact ? expr.slice(1) : expr;
+  const n = normaliser(e).trim();
+  if (!exact && /[\/.]/.test(n) && brut.includes(n)) return 0;          // dates et notations (09/06…)
+  const ws = motsDe(e); if (!ws.length) return -1;
+  for (let i=0; i + ws.length <= toks.length; i++){
+    if (ws.every((w,j) => motProche(toks[i+j], w, exact))) return i;
+  }
+  return -1;
+}
+const NEGATIONS = new Set(["ne","n","pas","jamais","sans","non","aucun","aucune","ni"]);
+function estNie(toks, i, long){
+  for (let k=Math.max(0,i-3); k<i; k++) if (NEGATIONS.has(toks[k])) return true;
+  for (let k=i+long; k<Math.min(toks.length, i+long+2); k++) if (toks[k]==="pas" || toks[k]==="jamais") return true;
+  return false;
+}
+const REPONSES_VIDES = ["je ne sais pas","sais pas","je sais pas","aucune idee","pas d idee","je passe","joker","rien","?"];
+
+/* =====================================================================
+   4. CARTES DÉFI : objectifs secrets, tous du même total
+   ===================================================================== */
+const MAX_OBJECTIF = 7;      // une carte Défi ne demande jamais plus de 7 cartes
+const TOTAL_OBJECTIF = 7;    // et toutes demandent exactement le même total
+const DEFIS = [              // ordre : rouge, bleu, vert, jaune, violet, orange
+  {id:"D01", nom:"Le Clinicien",          o:[3,1,1,1,1,0]},
+  {id:"D02", nom:"L'Éthicien",            o:[1,3,1,1,0,1]},
+  {id:"D03", nom:"Le Juriste",            o:[1,1,3,0,1,1]},
+  {id:"D04", nom:"L'Expert du confort",   o:[0,1,1,3,1,1]},
+  {id:"D05", nom:"L'Accompagnant",        o:[1,0,1,1,3,1]},
+  {id:"D06", nom:"Le Coordinateur",       o:[1,1,0,1,1,3]},
+  {id:"D07", nom:"Corps et droits",       o:[2,1,2,1,1,0]},
+  {id:"D08", nom:"Valeurs et présence",   o:[1,2,1,0,2,1]},
+  {id:"D09", nom:"Soin et équipe",        o:[1,1,1,2,0,2]},
+  {id:"D10", nom:"Au chevet",             o:[2,0,1,2,1,1]},
+  {id:"D11", nom:"La Loi et l'humain",    o:[0,1,2,1,2,1]},
+  {id:"D12", nom:"Le Grand Tour",         o:[1,1,1,1,2,1]},
+  {id:"D13", nom:"Douleur et présence",   o:[3,0,0,2,2,0]}
+];
+const totalDefi = d => d.o.reduce((a,b)=>a+b,0);
+/* Contrôle : 7 cartes au plus, même total pour tous, et réalisable avec les cartes jouables de chaque paquet */
+function defiValide(d){
+  const tot = totalDefi(d);
+  return tot <= MAX_OBJECTIF && tot === TOTAL_OBJECTIF && d.o.length === 6 && d.o.every(v => Number.isInteger(v) && v >= 0) &&
+         ORDRE.every((c,i) => d.o[i] <= BANQUE[c].filter(jouable).length);
+}
+function defisValides(){
+  const ok = DEFIS.filter(defiValide);
+  const ecartes = DEFIS.filter(d => !defiValide(d));
+  if (ecartes.length) console.warn("Cartes Défi écartées (plus de " + MAX_OBJECTIF + " cartes, total différent ou irréalisable) :", ecartes.map(d=>d.id));
+  return ok;
+}
+/* Tirage d'une carte Défi pour un joueur : au hasard, en évitant les défis déjà tirés par les autres */
+function tirerDefiPour(p){
+  const valides = defisValides();
+  if (!valides.length) throw new Error("Aucune carte Défi valide.");
+  const pris = new Set(S.joueurs.filter(q => q !== p && q.defi).map(q => q.defi));
+  const libres = valides.filter(d => !pris.has(d.id));
+  const pool = libres.length ? libres : valides;
+  const d = pool[Math.floor(Math.random()*pool.length)];
+  const obj = objectifsDe(d), tot = ORDRE.reduce((s,c)=>s+obj[c],0);
+  if (tot !== TOTAL_OBJECTIF || tot > MAX_OBJECTIF) throw new Error("Contrôle d'équité échoué pour " + d.id);
+  return d;
+}
+function genererObjectifs(n){
+  const valides = defisValides();
+  if (valides.length < n) throw new Error("Pas assez de cartes Défi équitables pour " + n + " joueurs.");
+  const tirage = shuffle(valides.slice()).slice(0, n);
+  const totaux = tirage.map(totalDefi);
+  if (!totaux.every(t => t === TOTAL_OBJECTIF)) throw new Error("Objectifs inéquitables : " + totaux.join(","));
+  return tirage;
+}
+
+/* =====================================================================
+   5. RÉPONSES DE RÉFÉRENCE (toutes les cartes sont validées)
+   ===================================================================== */
+function bonnesDe(card){ return card.bonnes || []; }
+function ensemblesAcceptes(card){ return [bonnesDe(card)].concat(card.bonnesAlt || []); }
+function jouable(card){ return true; }
+function reponseDe(card){ return card.reponse; }
+function correctionDe(card){ return CORRECTION[card.id]; }
+/* Type de saisie : choix à l'écran (QCM, vrai/faux, priorisation, grille) ou champ écrit (texte, calcul, trous) */
+function modeDe(card){
+  if (card.type === "trous" || card.type === "champs") return "trous";
+  const m = ({qcm:"qcm", qcmMulti:"qcmMulti", vf:"vf", grille:"grille", ordre:"ordre"})[card.type];
+  if (m) return m;
+  return card.type === "calcul" ? "calcul" : "texte";
+}
+
+/* =====================================================================
+   6. OUTILS
+   ===================================================================== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+function esc(s){ return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function nl(s){ return esc(s).replace(/\n/g,"<br>"); }
+function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function cvars(c){ const C=COULEURS[c]; return `--c:${C.hex};--ci:${C.ink}`; }
+function normaliser(s){ return " " + String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9/.\-]+/g," ").replace(/\s+/g," ").trim() + " "; }
+let toastT = 0;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2600); }
+function show(id){ $$(".screen").forEach(s=>s.classList.remove("active")); $("#screen-"+id).classList.add("active"); window.scrollTo(0,0); }
+const ABORT = {abort:true};
+function wait(ms){   // attente qui respecte la pause et s'annule si la partie est relancée
+  const tok = S.tok;
+  return new Promise((res, rej) => {
+    let t = 0;
+    const step = () => { if (S.tok !== tok) return rej(ABORT); if (!S.pause) t += 40; if (t >= ms) res(); else setTimeout(step, 40); };
+    setTimeout(step, 40);
+  });
+}
+
+/* =====================================================================
+   7. SONS
+   ===================================================================== */
+let AC = null;
+function beep(freq, dur, type="sine", vol=.15, when=0){
+  if (!S.son) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === "suspended") AC.resume();
+    const t = AC.currentTime + when, o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + dur + .03);
+  } catch (e) {}
+}
+const SFX = {
+  tick: () => beep(880,.08,"square",.05),
+  roll: () => { for (let i=0;i<9;i++) beep(260+Math.random()*320,.05,"triangle",.07,i*.12); },
+  step: () => beep(420+Math.random()*80,.06,"sine",.08),
+  flip: () => beep(520,.12,"triangle",.1),
+  ok:   () => { beep(660,.12,"sine",.15); beep(880,.12,"sine",.15,.12); beep(1320,.22,"sine",.15,.24); },
+  ko:   () => { beep(260,.2,"sawtooth",.06); beep(180,.3,"sawtooth",.06,.18); },
+  end:  () => { beep(300,.25,"square",.06); beep(200,.45,"square",.06,.25); },
+  win:  () => [523,659,784,1047,784,1047].forEach((f,i)=>beep(f,.2,"triangle",.14,i*.15))
+};
+
+/* =====================================================================
+   8. ÉTAT DU JEU ET JOUEURS
+   ===================================================================== */
+const S = {
+  son:true, tok:0, joueurs:[], courant:0, tour:1, premier:null,
+  decks:{}, defausse:0, phase:"none", carte:null, resolu:false,
+  sel:new Set(), ordreSel:[], repondant:null, exclus:new Set(), resultat:null, derniere:null,
+  gagnant:null, diceK:0, de:null, pas:0, objVisible:false,
+  pause:false, timerAvantPause:false, cwDir:"h", cwCells:null, revealAll:false,
+  setup:{n:2, noms:[], av:[]}
+};
+const cur = () => S.joueurs[S.courant];
+function objectifsDe(defi){ const o={}; ORDRE.forEach((c,i)=>o[c]=defi.o[i]); return o; }
+function estGagnant(p){ return !!p.obj && ORDRE.every(c => p.coll[c] >= p.obj[c]); }
+
+/* =====================================================================
+   9. PLATEAU : plan du service (pièces en périphérie, couloir intérieur, pièces centrales)
+   ===================================================================== */
+const BW = 30, BH = 20;
+const PLATEAU = (() => {
+  const segs = [[15,15,5,15,6],[5,15,5,5,6],[5,5,25,5,12],[25,5,25,15,6],[25,15,15,15,6]];
+  const pts = [];
+  segs.forEach(([x0,y0,x1,y1,n]) => { for (let k=0;k<n;k++) pts.push([x0+(x1-x0)*k/n, y0+(y1-y0)*k/n]); });
+  const MULTI = [4,13,22,31];
+  const base = ["rouge","vert","violet","bleu","orange","jaune"];
+  const seq = []; for (let b=0; seq.length<31; b++) for (let j=0;j<6;j++) seq.push(base[(j+2*b)%6]);
+  let n = 0;
+  return pts.map(([x,y], i) => {
+    const cell = {id:"C"+String(i).padStart(2,"0"), i, x, y};
+    if (i === 0) cell.type = "depart";
+    else if (MULTI.includes(i)) cell.type = "multi";
+    else { cell.type = "couleur"; cell.couleur = seq[n++]; }
+    return cell;
+  });
+})();
+/* Pièces : x, y, largeur, hauteur, lignes du nom, porte (côté t/b/l/r et position 0-1), couleur de fond */
+const W6 = 29.4/6;
+const PIECES = [
+  ...[0,1,2,3,4,5].map(k => ({x:.3+W6*k, y:.3, w:W6, h:3.4, nom:[`Chambre ${k+1}`], porte:["b", k===0?.78:k===5?.22:.5], bg:"#e7f0fa"})),
+  {x:.3,   y:16.3, w:5.9, h:3.4, nom:["Chambre 10"],  porte:["t",.7],  bg:"#e7f0fa"},
+  {x:6.2,  y:16.3, w:5.9, h:3.4, nom:["Chambre 9"],  porte:["t",.5],  bg:"#e7f0fa"},
+  {x:12.1, y:16.3, w:5.8, h:3.4, nom:["Accueil"],    porte:["t",.5],  bg:"#eef2f3"},
+  {x:17.9, y:16.3, w:5.9, h:3.4, nom:["Chambre 8"],  porte:["t",.5],  bg:"#e7f0fa"},
+  {x:23.8, y:16.3, w:5.9, h:3.4, nom:["Chambre 7"], porte:["t",.3],  bg:"#e7f0fa"},
+  {x:.3,   y:3.7,  w:3.4, h:6.3, nom:["Salon","des familles"], porte:["r",.82], bg:"#f6e9f5"},
+  {x:.3,   y:10,   w:3.4, h:6.3, nom:["Chambre 11"], porte:["r",.18], bg:"#e7f0fa"},
+  {x:26.3, y:3.7,  w:3.4, h:6.3, nom:["Bureau","de la cadre","de santé"], porte:["l",.82], bg:"#ecebf8"},
+  {x:26.3, y:10,   w:3.4, h:6.3, nom:["Salle","d'activité"], porte:["l",.18], bg:"#e2f4f0"},
+  {x:6.3,  y:6.3,  w:5.5, h:7.4, nom:["Bureau","médical"], porte:["t",.5], bg:"#e6f3e8"},
+  {x:11.8, y:6.3,  w:6.4, h:7.4, nom:["Poste","de soins"], porte:["b",.5], bg:"#fcefd8"},
+  {x:18.2, y:6.3,  w:5.5, h:7.4, nom:["Salle de","transmissions"], porte:["t",.5], bg:"#fff6dd"}
+];
+function porteSVG(p){
+  const [side, f] = p.porte, L = 1;
+  let gap, leaf, arc;
+  if (side === "b" || side === "t"){
+    const y = side === "b" ? p.y+p.h : p.y, a = p.x + p.w*f - L/2, dir = side === "b" ? -1 : 1;
+    gap = [a, y, a+L, y]; leaf = [a, y, a, y+dir*L];
+    arc = `M ${a} ${y+dir*L} A ${L} ${L} 0 0 ${side==="b"?1:0} ${a+L} ${y}`;
+  } else {
+    const x = side === "r" ? p.x+p.w : p.x, b = p.y + p.h*f - L/2, dir = side === "r" ? -1 : 1;
+    gap = [x, b, x, b+L]; leaf = [x, b, x+dir*L, b];
+    arc = `M ${x+dir*L} ${b} A ${L} ${L} 0 0 ${side==="l"?1:0} ${x} ${b+L}`;
+  }
+  return `<line class="gap" x1="${gap[0]}" y1="${gap[1]}" x2="${gap[2]}" y2="${gap[3]}"/><line class="leaf" x1="${leaf[0]}" y1="${leaf[1]}" x2="${leaf[2]}" y2="${leaf[3]}"/><path class="arc" d="${arc}"/>`;
+}
+function caseSVG(c, P){
+  const r = .62;
+  let corps;
+  if (c.type === "couleur"){
+    corps = `<circle r="${r}" fill="url(#${P}g-${c.couleur})" stroke="#fff" stroke-width=".13"/>`;
+  } else if (c.type === "multi"){
+    const cols = ["rouge","orange","jaune","vert","bleu","violet"];
+    corps = cols.map((k,j) => {
+      const a0 = (j*60-90)*Math.PI/180, a1 = ((j+1)*60-90)*Math.PI/180;
+      return `<path d="M0 0 L ${(r*Math.cos(a0)).toFixed(3)} ${(r*Math.sin(a0)).toFixed(3)} A ${r} ${r} 0 0 1 ${(r*Math.cos(a1)).toFixed(3)} ${(r*Math.sin(a1)).toFixed(3)} Z" fill="${COULEURS[k].hex}"/>`;
+    }).join("") + `<circle r="${r}" fill="url(#${P}brillance)" stroke="#fff" stroke-width=".13"/>`;
+  } else {
+    corps = `<circle r="${r}" fill="#ffffff" stroke="#16a34a" stroke-width=".16"/><circle r=".22" fill="#16a34a"/>`;
+  }
+  return `<g class="cellg"${P==="j-"?` id="cell-${c.i}"`:""} transform="translate(${c.x} ${c.y})" filter="url(#${P}ombre)"><circle class="halo" r=".92"/>${corps}<title>${esc(caseNom(c.i))}</title></g>`;
+}
+function plateauHTML(P){
+  const defs = `<defs>
+    <pattern id="${P}carrelage" width="1" height="1" patternUnits="userSpaceOnUse"><rect width="1" height="1" fill="#f2ead9"/><path d="M1 0 V1 H0" fill="none" stroke="#e6dcc6" stroke-width=".03"/></pattern>
+    <filter id="${P}ombre" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy=".07" stdDeviation=".07" flood-opacity=".35"/></filter>
+    <radialGradient id="${P}brillance" cx=".35" cy=".3" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    ${ORDRE.map(c=>`<radialGradient id="${P}g-${c}" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="${COULEURS[c].hex}"/><stop offset="1" stop-color="${COULEURS[c].hex}"/></radialGradient>`).join("")}
+  </defs>`;
+  const pieces = PIECES.map(p => {
+    const cx = p.x + p.w/2, cy = p.y + p.h/2, lh = .58, y0 = cy - (p.nom.length-1)*lh/2 + .17;
+    return `<g class="room"><rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="${p.bg}"/>${porteSVG(p)}
+      <text class="rlab" text-anchor="middle">${p.nom.map((l,k)=>`<tspan x="${cx}" y="${(y0+k*lh).toFixed(2)}">${esc(l)}</tspan>`).join("")}</text></g>`;
+  }).join("");
+  return `<svg class="plan" viewBox="0 0 ${BW} ${BH}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Plan du service de soins palliatifs">${defs}
+    <rect class="ext" x="0" y="0" width="${BW}" height="${BH}"/>
+    <rect class="sol" fill="url(#${P}carrelage)" x="3.7" y="3.7" width="22.6" height="12.6"/>
+    <rect class="piste" x="5" y="5" width="20" height="10" rx=".2"/>
+    ${pieces}
+    <rect class="bat" x=".3" y=".3" width="29.4" height="19.4" rx=".15"/>
+    ${PLATEAU.map(c=>caseSVG(c,P)).join("")}
+  </svg>${P==="j-"?`<div class="pawns" id="pawns"></div>`:""}`;
+}
+function caseNom(i){
+  const c = PLATEAU[i];
+  if (c.type === "depart") return "Départ";
+  if (c.type === "multi") return "Case multicolore";
+  return COULEURS[c.couleur].theme;
+}
+function caseDot(i){
+  const c = PLATEAU[i];
+  if (c.type === "multi") return `<span class="dot multi"></span>`;
+  if (c.type === "depart") return `<span class="dot" style="--c:#fff;border-color:#16a34a"></span>`;
+  return `<span class="dot" style="--c:${COULEURS[c.couleur].hex}"></span>`;
+}
+function construirePlateau(){ $("#board").innerHTML = plateauHTML("j-"); }
+function creerPions(){
+  $("#board #pawns").innerHTML = S.joueurs.map((p,i) => `<div class="pawn" id="pawn-${i}" style="--a:${p.coul}" title="${esc(p.nom)}">${p.av}<b>${i+1}</b></div>`).join("");
+  placerPions();
+}
+function placerPions(){
+  S.joueurs.forEach((p,i) => {
+    const el = $("#board #pawn-"+i); if (!el) return;
+    const cell = PLATEAU[p.pos];
+    const memes = S.joueurs.map((_,j)=>j).filter(j => S.joueurs[j].pos === p.pos);
+    const k = memes.indexOf(i), n = memes.length;
+    let dx = 0, dy = 0;
+    if (n > 1){ const a = -Math.PI/2 + 2*Math.PI*k/n, r = n > 3 ? 2.6 : 2; dx = Math.cos(a)*r; dy = Math.sin(a)*r; }
+    el.style.left = `calc(${cell.x/BW*100}% + ${dx.toFixed(2)}cqw)`;
+    el.style.top  = `calc(${cell.y/BH*100}% + ${dy.toFixed(2)}cqw)`;
+    el.classList.toggle("active", i === S.courant && S.phase !== "handoff");
+  });
+}
+function marquerCase(i, cls, on){ const el = $("#board #cell-"+i); if (el) el.classList.toggle(cls, on); }
+function effacerMarques(){ $$("#board .cellg.land, #board .cellg.trail").forEach(e => e.classList.remove("land","trail")); }
+
+/* =====================================================================
+   10. DÉ ET DÉPLACEMENT
+   ===================================================================== */
+const PIPS = {1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
+const DICE_ROT = {1:[0,0], 3:[0,-90], 6:[0,180], 4:[0,90], 2:[-90,0], 5:[90,0]};
+function construireDe(){
+  $("#dice").innerHTML = [1,2,3,4,5,6].map(v => `<div class="dface f${v}">${[1,2,3,4,5,6,7,8,9].map(k=>`<i class="${PIPS[v].includes(k)?"on":""}"></i>`).join("")}</div>`).join("");
+}
+async function lancerDe(){
+  if (S.phase !== "idle" || S.pause || !cur().defi) return;          // un seul dé à la fois, carte Défi tirée
+  S.phase = "rolling"; S.de = null; S.pas = 0; effacerMarques(); renderAll();
+  const v = 1 + Math.floor(Math.random()*6);
+  const t = DICE_ROT[v]; S.diceK += 2; const k = S.diceK*360;
+  $("#dice").style.transform = `rotateX(${t[0]+k}deg) rotateY(${t[1]+k}deg)`;
+  SFX.roll();
+  try {
+    await wait(1350);
+    S.de = v; S.phase = "moving"; renderAll();
+    await deplacer(S.courant, v);
+    await arriver();
+  } catch (e) { if (e !== ABORT) console.error(e); }
+}
+async function deplacer(i, n){
+  const p = S.joueurs[i];
+  for (let s=1; s<=n; s++){
+    await wait(s === 1 ? 200 : 330);
+    p.pos = (p.pos + 1) % PLATEAU.length;           // position réelle, mise à jour case par case
+    S.pas = s;
+    marquerCase(p.pos, "trail", true); const prev = p.pos; setTimeout(()=>marquerCase(prev,"trail",false), 300);
+    placerPions(); SFX.step(); renderDePanel(); renderJoueursPub(); renderMoi();
+  }
+}
+async function arriver(){
+  const p = cur(), cell = PLATEAU[p.pos];
+  marquerCase(p.pos, "land", true);
+  S.phase = "landed"; renderAll();
+  await wait(750);
+  if (cell.type === "depart"){
+    toast("Case Départ : relancez le dé !");
+    marquerCase(p.pos, "land", false);
+    S.phase = "idle"; renderAll(); return;
+  }
+  if (cell.type === "multi"){ ouvrirChoix(); return; }
+  await tirerCarte(cell.couleur);
+}
+
+/* ---------- Case multicolore : le joueur choisit la catégorie ---------- */
+function ouvrirChoix(){
+  S.phase = "choix"; S.carte = null; Timer.reset();
+  $("#qcard").innerHTML = `<div class="choix"><h3>Case multicolore</h3><p>Choisissez la couleur de la carte que vous voulez tenter de gagner.</p>
+    <div class="choix-grid">${ORDRE.map(c=>`<button data-a="choisir" data-c="${c}" style="${cvars(c)}"><i></i>${COULEURS[c].theme}</button>`).join("")}</div></div>`;
+  $("#qres").innerHTML = ""; $("#qctrl").innerHTML = "";
+  $("#consigne").textContent = `${cur().nom} choisit une catégorie.`;
+  $("#consigne").classList.remove("autres");
+  ouvrirQ(); renderAll();
+}
+function choisirCouleur(c){
+  if (S.phase !== "choix" || S.pause || !COULEURS[c]) return;
+  tirerCarte(c).catch(e => { if (e !== ABORT) console.error(e); });
+}
+
+/* =====================================================================
+   11. GESTION DES CARTES ET DES PAQUETS
+   ===================================================================== */
+function idsJouables(c){ return BANQUE[c].filter(jouable).map(x => x.id); }
+function initDecks(){ ORDRE.forEach(c => S.decks[c] = shuffle(idsJouables(c))); S.defausse = 0; }
+function remplir(c){
+  const d = shuffle(idsJouables(c));
+  if (d.length > 1 && S.carte && d[d.length-1] === S.carte.id) [d[0], d[d.length-1]] = [d[d.length-1], d[0]];
+  S.decks[c] = d; toast(`Paquet ${COULEURS[c].theme} épuisé : il est remélangé.`);
+}
+function piocher(c){ if (!S.decks[c].length) remplir(c); return CARTE_PAR_ID[S.decks[c].pop()]; }
+function syncDeck(card){
+  const d = S.decks[card.couleur]; if (!d) return;
+  const i = d.indexOf(card.id);
+  if (jouable(card)) { if (i < 0 && !(S.carte && S.carte.id === card.id)) d.splice(Math.floor(Math.random()*(d.length+1)), 0, card.id); }
+  else if (i >= 0) d.splice(i, 1);
+}
+
+/* =====================================================================
+   12. CHRONOMÈTRE (30 s partagées, basé sur l'horloge réelle)
+   ===================================================================== */
+const CIRC = 2*Math.PI*44;
+const Timer = {
+  dur:DUREE_QUESTION, rem:DUREE_QUESTION, end:0, running:false, raf:0, to:0, cb:null, lastSec:-1, token:0,
+  start(ms, cb){ this.stop(); this.dur=ms; this.rem=ms; this.cb=cb; this.lastSec=-1; this.resume(); },
+  resume(){
+    if (this.running || this.rem <= 0 || !this.cb) return;
+    this.running = true; this.end = performance.now() + this.rem;
+    const tk = ++this.token;
+    this.to = setTimeout(() => this.check(tk), this.rem + 30);
+    this.frame(tk);
+  },
+  frame(tk){
+    if (tk !== this.token || !this.running) return;
+    this.rem = Math.max(0, this.end - performance.now()); this.draw();
+    if (this.rem <= 0) { this.finish(tk); return; }
+    this.raf = requestAnimationFrame(() => this.frame(tk));
+  },
+  check(tk){
+    if (tk !== this.token || !this.running) return;
+    this.rem = Math.max(0, this.end - performance.now());
+    if (this.rem <= 0) this.finish(tk); else this.to = setTimeout(() => this.check(tk), this.rem + 30);
+  },
+  finish(tk){
+    if (tk !== this.token || !this.running) return;
+    this.running = false; this.token++; cancelAnimationFrame(this.raf); clearTimeout(this.to);
+    this.rem = 0; this.draw(); SFX.end();
+    const cb = this.cb; this.cb = null; if (cb) cb();
+  },
+  pause(){
+    if (!this.running) return;
+    this.rem = Math.max(0, this.end - performance.now()); this.running = false; this.token++;
+    cancelAnimationFrame(this.raf); clearTimeout(this.to); this.draw();
+  },
+  stop(){ this.running=false; this.token++; cancelAnimationFrame(this.raf); clearTimeout(this.to); this.cb=null; this.draw(); },
+  reset(){ this.stop(); this.dur=DUREE_QUESTION; this.rem=DUREE_QUESTION; this.draw(); },
+  draw(){
+    const ring=$("#ring"), num=$("#tnum"), box=$("#timer"); if (!ring) return;
+    const f = this.dur ? this.rem/this.dur : 0;
+    ring.style.strokeDashoffset = (CIRC*(1-f)).toFixed(2);
+    const s = Math.ceil(this.rem/1000); num.textContent = s;
+    box.classList.toggle("warn", s <= 5 && this.rem > 0);
+    box.classList.toggle("paused", !this.running && this.rem > 0 && this.rem < this.dur);
+    if (this.running && s !== this.lastSec){ if (s <= 5 && s > 0 && this.lastSec !== -1) SFX.tick(); this.lastSec = s; }
+    majIndices();
+  }
+};
+
+/* =====================================================================
+   13. CARTE QUESTION : affichage
+   ===================================================================== */
+function ouvrirQ(){ const q=$("#qover"); q.classList.add("open"); q.classList.remove("min"); }
+function fermerQ(){ const q=$("#qover"); q.classList.remove("open","min"); }
+async function tirerCarte(c){
+  const carte = piocher(c);
+  Object.assign(S, {carte, resolu:false, sel:new Set(), ordreSel:[], repondant:null, exclus:new Set(), resultat:null, derniere:null, cwDir:"h", complement:false});
+  Timer.reset(); renderCard(carte); ouvrirQ(); S.phase = "flip"; renderAll();
+  await wait(600);
+  const inner = $("#cardInner"); inner.classList.add("flipped"); SFX.flip();
+  await wait(780);
+  inner.classList.add("settled");
+  S.phase = "actif";
+  Timer.start(DUREE_QUESTION, () => defausser("Temps écoulé : personne n'a trouvé la bonne réponse."));
+  renderAll(); focusSaisie();
+}
+function focusSaisie(){
+  const vide = $$("#qbody .blank").find(i => !i.value.trim() && !i.disabled);
+  const el = vide || $("#repTxt") || $("#repNum"); if (el && !el.disabled) el.focus();
+}
+/* Textes à trous et réponses à plusieurs champs */
+function blancsDe(card){
+  if (card.type === "champs") return card.champs.map(ch => ({acc:ch.acc, ref:ch.ref}));
+  const out = []; card.texte.replace(/\[\[([^\]]+)\]\]/g, (_, g) => { const v = g.split("|"); out.push({acc:v, ref:v[0]}); return ""; });
+  return out;
+}
+function trousHTML(card){
+  if (card.type === "champs") return `<div class="champs">${card.champs.map((ch,i)=>`<div class="champ"><p>${esc(ch.texte)}</p>
+      <label>Réponse ${String.fromCharCode(65+i)}<input class="blank large" data-i="${i}" autocomplete="off" spellcheck="false" placeholder="Votre réponse"></label></div>`).join("")}</div>
+    <div class="hint">Écrivez une réponse pour chaque description, puis validez.</div><div id="feed"></div>`;
+  let i = 0;
+  const html = esc(card.texte).replace(/\[\[([^\]]+)\]\]/g, (_, g) => { const ref = g.split("|")[0]; i++;
+    return `<input class="blank" data-i="${i-1}" style="width:${Math.max(6, ref.length + 2)}ch" autocomplete="off" spellcheck="false" aria-label="Mot manquant ${i}">`; });
+  return `<p class="trous">${html}</p><div class="hint">Complétez chaque mot manquant (Entrée pour passer au suivant), puis validez.</div><div id="feed"></div>`;
+}
+function texteCorrigeHTML(card){
+  if (card.type === "champs") return card.champs.map((ch,i)=>`${esc(ch.texte)}<br>→ <mark>${esc(ch.ref)}</mark>`).join("<br><br>");
+  return esc(card.texte).replace(/\[\[([^\]]+)\]\]/g, (_, g) => `<mark>${g.split("|")[0]}</mark>`);
+}
+function blancOK(val, acc){ const toks = motsDe(val), brut = normaliser(val); return toks.length > 0 && acc.some(v => chercher(toks, brut, v) >= 0); }
+function evaluerTrous(card){
+  const bl = blancsDe(card), inputs = $$("#qbody .blank");
+  const etat = bl.map((b,i) => blancOK(inputs[i] ? inputs[i].value : "", b.acc));
+  const n = etat.filter(Boolean).length;
+  return {ok: n === bl.length, etat, nTrous:n, total:bl.length, texte: inputs.map(x => x.value.trim()).join(" / ")};
+}
+const PAS_INDICE = 6;   // secondes entre deux indices progressifs
+function majIndices(force){
+  const c = S.carte; if (!c || !c.indicesProgressifs) return;
+  const ecoule = (Timer.dur - Timer.rem) / 1000;
+  $$("#qbody .indices li").forEach((li, i) => {
+    const at = i * PAS_INDICE, vis = force || S.resolu || i === 0 || ecoule >= at;
+    const txt = vis ? c.indices[i] : `Indice ${i+1} : il apparaît dans ${Math.max(1, Math.ceil(at - ecoule))} s`;
+    if (li.textContent !== txt) li.textContent = txt;
+    li.classList.toggle("cache", !vis);
+  });
+}
+function rebusHTML(tokens){
+  return `<div class="rebus" role="img" aria-label="Rébus">${tokens.map(t => /^</.test(t) ? `<span class="tile">${t}</span>`
+    : `<span class="tile${/[A-Za-z’']/.test(t) ? " txt" : ""}">${esc(t)}</span>`).join("")}</div>`;
+}
+function renderCard(card){
+  const C = COULEURS[card.couleur], mode = modeDe(card);
+  const titre = card.titre || TYPES[card.type] || "Question";
+  let body = "";
+  if (card.contexte) body += `<p class="q-ctx">${nl(card.contexte)}</p>`;
+  body += `<div class="q-text">${nl(card.question)}</div>`;
+  if (card.indices) body += `<ul class="indices">${card.indices.map((x,i)=>`<li class="${card.indicesProgressifs && i>0 ? "cache" : ""}">${card.indicesProgressifs && i>0 ? `Indice ${i+1} : il apparaît dans ${i*PAS_INDICE} s` : esc(x)}</li>`).join("")}</ul>`;
+  if (card.rebus) body += rebusHTML(card.rebus);
+  if (mode === "qcm" || mode === "qcmMulti" || mode === "ordre"){
+    body += `<div class="opts" id="opts">${card.options.map(o => `<button class="opt" data-a="opt" data-k="${o[0]}"><span class="k">${mode==="ordre"?"·":o[0]}</span><span>${esc(o[1])}</span></button>`).join("")}</div>`;
+    body += `<div class="hint">${mode==="qcm" ? "Une seule bonne réponse : sélectionnez-la puis validez." : mode==="qcmMulti" ? "Plusieurs réponses possibles : sélectionnez toutes les bonnes réponses, et seulement elles, puis validez." : "Touchez les actions dans l'ordre de priorité, puis validez. Touchez à nouveau une action pour l'enlever."}</div>`;
+  } else if (mode === "vf"){
+    body += `<div class="opts vf" id="opts">${card.options.map(o => `<button class="opt" data-a="opt" data-k="${o[0]}"><span>${esc(o[1])}</span></button>`).join("")}</div>`;
+    body += `<div class="hint">Sélectionnez Vrai ou Faux, puis validez.</div>`;
+  } else if (mode === "grille"){
+    body += grilleHTML(card.grille);
+  } else if (mode === "trous"){
+    body += trousHTML(card);
+  } else if (mode === "calcul"){
+    body += `<div class="rep-zone"><label for="repNum">Votre résultat <span>avec l'unité, par exemple « 2,5 ml »</span></label>
+      <input id="repNum" type="text" inputmode="decimal" autocomplete="off" placeholder="Résultat"></div><div id="feed"></div>`;
+  } else {
+    if (card.options) body += `<div class="opts static-opts">${card.options.map(o => `<div class="opt"><span class="k">${o[0]==="vrai"?"V":o[0]==="faux"?"F":o[0]}</span><span>${esc(o[1])}</span></div>`).join("")}</div>`;
+    const cor = correctionDe(card);
+    const consigne = cor && cor.min > 1 ? `citez au moins ${cor.min} éléments` : "quelques mots suffisent";
+    body += `<div class="rep-zone"><label for="repTxt">Votre réponse <span>${consigne}</span></label>
+      <textarea id="repTxt" autocomplete="off" spellcheck="true" placeholder="Écrivez votre réponse ici…"></textarea></div><div id="feed"></div>`;
+  }
+  $("#qcard").innerHTML = `
+  <div class="card-scene"><div class="card-inner" id="cardInner">
+    <div class="face cover" style="${cvars(card.couleur)}"><div class="cover-in"><div class="cover-title">${C.theme}</div><div class="cover-sub">Qui soigne gagne !</div></div></div>
+    <div class="face qface" style="${cvars(card.couleur)}">
+      <div class="q-head"><span>${C.theme}</span><span class="q-type">${esc(titre)}</span><span class="q-id">${card.id}</span></div>
+      <div class="q-body" id="qbody">${body}</div>
+      <div class="answer" id="answerBox" hidden></div>
+    </div>
+  </div></div>`;
+  if (mode === "grille") setupGrille(card.grille);
+}
+function answerHTML(card){
+  const mode = modeDe(card), d = S.derniere;
+  let repHTML;
+  if (mode === "qcm" || mode === "qcmMulti"){
+    repHTML = nl(card.options.filter(o=>bonnesDe(card).includes(o[0])).map(o=>`${o[0]}. ${o[1]}`).join("\n"));
+    if (card.bonnesAlt) repHTML += `<div class="ax">Aussi accepté : ${card.bonnesAlt.map(s=>s.join(" + ")).join(" ; ")}.</div>`;
+  }
+  else if (mode === "vf") repHTML = card.bonnes[0] === "vrai" ? "Vrai." : "Faux.";
+  else if (mode === "trous") repHTML = `<span class="texte-corrige">${texteCorrigeHTML(card)}</span>`;
+  else repHTML = nl(reponseDe(card));
+  const extra = (mode === "qcm" || mode === "qcmMulti") && card.reponse ? card.reponse : "";
+  let analyse = "";
+  if (mode === "texte"){
+    const cor = correctionDe(card);
+    analyse = `<div class="ax"><b>Éléments attendus</b> (au moins ${cor.min}${cor.unParmi ? `, dont un parmi : ${esc(cor.unParmi.join(", "))}` : ""}) :</div><div class="attendus">${cor.cles.map(g=>`<span class="${d && d.trouves && d.trouves.includes(g[0])?"on":""}">${esc(g[0])}</span>`).join("")}</div>`;
+  }
+  const dernier = d && d.texte ? `<div class="ax"><b>Dernière réponse saisie :</b> « ${esc(d.texte)} » ${d.ok?"✔️":"✖️"}${d.erreur?`<br><span style="color:#8b1c1c;font-weight:800">${esc(d.msg)}</span>`:""}</div>` : "";
+  return `<div class="at">Correction</div>
+    <div class="ar">${repHTML}</div>
+    ${extra ? `<div class="ax">${nl(extra)}</div>` : ""}
+    ${dernier}${analyse}
+    ${card.calcul ? `<div class="calc"><b>Calcul détaillé</b>\n${esc(card.calcul)}</div>` : ""}
+    ${card.explication ? `<div class="ax">💡 ${nl(card.explication)}</div>` : ""}
+`;
+}
+
+/* ---------- Mots croisés ---------- */
+function grilleHTML(g){
+  const cells = {};
+  g.mots.forEach((m,wi) => [...m.mot].forEach((L,j) => {
+    const r = m.r + (m.dir==="v"?j:0), c = m.c + (m.dir==="h"?j:0), k = r+","+c;
+    cells[k] = cells[k] || {L, w:[], n:null}; cells[k].w.push(wi); if (j===0) cells[k].n = m.num;
+  }));
+  S.cwCells = cells;
+  let h = `<div class="cw" style="grid-template-columns:repeat(${g.cols},var(--s))">`;
+  for (let r=0;r<g.rows;r++) for (let c=0;c<g.cols;c++){
+    const cell = cells[r+","+c];
+    h += cell ? `<div class="cell2">${cell.n?`<span class="n">${cell.n}</span>`:""}<input data-r="${r}" data-c="${c}" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="characters" aria-label="Case ligne ${r+1} colonne ${c+1}"></div>`
+              : `<div class="cell2 empty"></div>`;
+  }
+  h += `</div><div class="clues">${g.mots.map(m=>`<div data-a="clue" data-dir="${m.dir}" data-r="${m.r}" data-c="${m.c}"><b>${m.num}. ${m.dir==="h"?"Horizontal":"Vertical"} (${m.mot.length} lettres) :</b> ${esc(m.indice)}</div>`).join("")}</div>
+    <div class="hint">Remplissez la grille, puis validez.</div>`;
+  return h;
+}
+function setupGrille(g){
+  const zone = $("#qbody");
+  zone.addEventListener("focusin", e => {
+    const inp = e.target.closest(".cw input"); if (!inp) return;
+    const cell = S.cwCells[inp.dataset.r+","+inp.dataset.c];
+    if (cell.w.length === 1) S.cwDir = g.mots[cell.w[0]].dir;
+    $$(".clues div", zone).forEach(d => d.classList.toggle("on", d.dataset.dir === S.cwDir));
+  });
+  zone.addEventListener("input", e => {
+    const inp = e.target.closest(".cw input"); if (!inp) return;
+    const v = inp.value.normalize("NFD").replace(/[^A-Za-z]/g,"").toUpperCase();
+    inp.value = v.slice(-1);
+    if (inp.value) moveCw(inp, 1);
+  });
+  zone.addEventListener("keydown", e => {
+    const inp = e.target.closest(".cw input"); if (!inp) return;
+    if (e.key === "Backspace" && !inp.value){ e.preventDefault(); moveCw(inp, -1, true); }
+    const arrows = {ArrowRight:[0,1,"h"], ArrowLeft:[0,-1,"h"], ArrowDown:[1,0,"v"], ArrowUp:[-1,0,"v"]};
+    if (arrows[e.key]){ e.preventDefault(); const [dr,dc,dir]=arrows[e.key]; S.cwDir=dir;
+      const n = $(`.cw input[data-r="${+inp.dataset.r+dr}"][data-c="${+inp.dataset.c+dc}"]`); if (n) n.focus(); }
+  });
+}
+function moveCw(inp, step, clear){
+  const dr = S.cwDir==="v" ? step : 0, dc = S.cwDir==="h" ? step : 0;
+  const n = $(`.cw input[data-r="${+inp.dataset.r+dr}"][data-c="${+inp.dataset.c+dc}"]`);
+  if (n){ n.focus(); if (clear) n.value = ""; }
+}
+
+/* =====================================================================
+   14. RÉPONSES ÉCRITES ET VALIDATION AUTOMATIQUE
+   ===================================================================== */
+function evaluerTexte(card, texte){
+  const cor = correctionDe(card), brut = normaliser(texte), toks = motsDe(texte);
+  const vide = toks.length === 0 || REPONSES_VIDES.some(v => brut.trim() === v || brut.trim() === v.replace(/ /g,""));
+  if (vide) return {ok:false, trouves:[], min:cor.min, texte, vide:true, msg:"Pas de réponse proposée."};
+  // 1. erreurs de fond : refus explicite, sauf si l'expression est niée (« ne décide pas à sa place »)
+  for (const it of (cor.non || [])) for (const expr of it.p){
+    const i = chercher(toks, brut, expr);
+    if (i >= 0 && !estNie(toks, i, motsDe(expr.replace(/^=/,"")).length)) return {ok:false, trouves:[], min:cor.min, texte, erreur:true, msg:"Erreur de fond : " + it.m};
+  }
+  // 2. éléments attendus : synonymes, variantes, abréviations, fautes de frappe tolérées
+  const trouves = cor.cles.filter(g => g.slice(1).concat([g[0]]).some(k => chercher(toks, brut, k) >= 0)).map(g => g[0]);
+  const manque = cor.unParmi && !cor.unParmi.some(l => trouves.includes(l));
+  const r = {ok: trouves.length >= cor.min && !manque, trouves, min: cor.min, texte};
+  if (manque && trouves.length) r.msgComplement = `Réponse incomplète : citez au moins un élément parmi : ${cor.unParmi.join(", ")}.`;
+  return r;
+}
+function evaluerCalcul(card, texte){
+  const cor = CORRECTION[card.id], t = String(texte).toLowerCase().replace(",", ".").replace(/\s+/g," ");
+  const m = t.match(/(\d+(?:\.\d+)?|\.\d+)/);
+  if (!m) return {ok:false, texte, msg:"Aucune valeur numérique reconnue."};
+  const v = parseFloat(m[1]);
+  const apres = t.slice(m.index + m[1].length);
+  const uniteFausse = /\b(mg|g|l|cl|µg|ug|mcg)\b/.test(apres) && !/\bml\b/.test(apres);
+  const ok = Math.abs(v - cor.num) < 1e-6 && !uniteFausse;
+  return {ok, texte, msg: ok ? "" : uniteFausse ? "Unité incorrecte : le résultat attendu est un volume en ml." : "Valeur incorrecte."};
+}
+const PHASES_Q = ["actif","autres","autresRep"];
+function peutInteragir(){ return !!S.carte && !S.pause && !S.resolu && (S.phase === "actif" || S.phase === "autresRep"); }
+function clicOption(k){
+  if (!peutInteragir()) return;
+  const mode = modeDe(S.carte);
+  if (mode === "qcm" || mode === "vf") S.sel = new Set([k]);
+  else if (mode === "qcmMulti") S.sel.has(k) ? S.sel.delete(k) : S.sel.add(k);
+  else if (mode === "ordre"){ const i = S.ordreSel.indexOf(k); i >= 0 ? S.ordreSel.splice(i,1) : S.ordreSel.push(k); }
+  majSelection();
+}
+function majSelection(){
+  if (!S.carte) return;
+  const mode = modeDe(S.carte);
+  $$("#opts .opt").forEach(b => {
+    const k = b.dataset.k;
+    if (mode === "ordre"){ const i = S.ordreSel.indexOf(k); b.classList.toggle("sel", i >= 0); b.querySelector(".k").textContent = i >= 0 ? i+1 : "·"; }
+    else b.classList.toggle("sel", S.sel.has(k));
+  });
+}
+function resetSaisie(){
+  S.sel = new Set(); S.ordreSel = [];
+  $$(".cw input").forEach(i => i.value = "");
+  $$("#qbody .blank").forEach(i => { i.value = ""; i.classList.remove("good","fix"); i.readOnly = false; });
+  const t = $("#repTxt"), n = $("#repNum"); if (t) t.value = ""; if (n) n.value = "";
+  majSelection();
+}
+function appliquerVerrou(){
+  const qb = $("#qbody"); if (!qb) return;
+  const ok = peutInteragir();
+  qb.classList.toggle("locked", !ok);
+  $$(".cw input, #repTxt, #repNum, .blank", qb).forEach(i => i.disabled = !ok);
+}
+function saisieVide(){
+  const mode = modeDe(S.carte);
+  if (mode === "ordre") return S.ordreSel.length < S.carte.options.length;
+  if (mode === "grille") return !$$(".cw input").every(i => i.value);
+  if (mode === "trous") return !$$("#qbody .blank").every(i => i.value.trim());
+  if (mode === "texte") return !($("#repTxt").value.trim());
+  if (mode === "calcul") return !($("#repNum").value.trim());
+  return S.sel.size === 0;
+}
+function corriger(){
+  const card = S.carte, mode = modeDe(card);
+  if (mode === "texte") return evaluerTexte(card, $("#repTxt").value.trim());
+  if (mode === "trous") return evaluerTrous(card);
+  if (mode === "calcul") return evaluerCalcul(card, $("#repNum").value.trim());
+  if (mode === "grille") return {ok: $$(".cw input").every(i => i.value === S.cwCells[i.dataset.r+","+i.dataset.c].L)};
+  if (mode === "ordre") return {ok: S.ordreSel.join() === card.bonnes.join()};
+  // une sélection incomplète ou avec une réponse en trop est fausse ; certaines cartes acceptent plusieurs combinaisons
+  return {ok: ensemblesAcceptes(card).some(bs => { const b = new Set(bs); return S.sel.size === b.size && [...S.sel].every(k => b.has(k)); })};
+}
+function messageEchec(r){
+  if (r.msg) return r.msg;
+  if (r.total) return `${r.nTrous} réponse${r.nTrous>1?"s":""} juste${r.nTrous>1?"s":""} sur ${r.total}.`;
+  if (r.trouves && r.trouves.length) return `Réponse insuffisante : ${r.trouves.length} élément${r.trouves.length>1?"s":""} reconnu${r.trouves.length>1?"s":""} (${r.trouves.join(", ")}) sur ${r.min} nécessaire${r.min>1?"s":""}.`;
+  if (r.trouves) return `Réponse insuffisante : ${r.trouves.length} élément${r.trouves.length>1?"s":""} attendu${r.trouves.length>1?"s":""} reconnu${r.trouves.length>1?"s":""} sur ${r.min} nécessaire${r.min>1?"s":""}.`;
+  return "Réponse incorrecte.";
+}
+function validerReponse(){
+  if (!peutInteragir()) return;
+  const mode = modeDe(S.carte);
+  if (saisieVide()){
+    toast(mode==="grille" ? "Complétez toute la grille avant de valider." : mode==="ordre" ? "Classez toutes les actions avant de valider."
+        : mode==="trous" ? "Complétez toutes les réponses avant de valider."
+        : (mode==="texte"||mode==="calcul") ? "Écrivez votre réponse avant de valider." : "Sélectionnez une réponse avant de valider.");
+    return;
+  }
+  const r = corriger(); S.derniere = r;
+  const qui = S.phase === "actif" ? S.courant : S.repondant;
+  if (r.ok){ gagner(qui); return; }
+  // Réponse incomplète ou non reconnue (sans erreur de fond) : un essai pour compléter ou reformuler
+  if (mode === "trous" && r.nTrous > 0 && !S.complement && Timer.rem > 1500){
+    S.complement = true;
+    $$("#qbody .blank").forEach((inp,i) => { inp.classList.toggle("good", r.etat[i]); inp.classList.toggle("fix", !r.etat[i]); inp.readOnly = r.etat[i]; });
+    afficherFeed(`Réponse incomplète : ${r.nTrous} réponse${r.nTrous>1?"s":""} juste${r.nTrous>1?"s":""} sur ${r.total}. Corrigez ${r.total-r.nTrous>1?"les cases en rouge":"la case en rouge"} puis validez à nouveau (dernier essai).`);
+    toast("✍️ Corrigez votre réponse"); focusSaisie();
+    const f = $$("#qbody .blank").find(i => i.classList.contains("fix")); if (f) f.select();
+    return;
+  }
+  if (mode === "texte" && !r.vide && !r.erreur && !S.complement && Timer.rem > 1500){
+    S.complement = true;
+    const m = r.msgComplement ? r.msgComplement + " Complétez votre réponse puis validez à nouveau." : r.trouves.length
+      ? `Réponse incomplète : ${r.trouves.length} élément${r.trouves.length>1?"s":""} reconnu${r.trouves.length>1?"s":""} sur ${r.min} (${r.trouves.join(", ")}). Complétez votre réponse puis validez à nouveau.`
+      : "Réponse non reconnue. Reformulez-la avec d'autres mots, plus précis, puis validez à nouveau (dernier essai).";
+    afficherFeed(m); toast("✍️ " + (r.trouves.length ? "Complétez votre réponse" : "Reformulez votre réponse")); focusSaisie();
+    return;
+  }
+  const msg = `${S.joueurs[qui].nom} : ${messageEchec(r)}`;
+  if (S.phase === "actif") ouvrirAutres(msg); else mauvaiseAutre(msg);
+}
+function afficherFeed(msg){ const f = $("#feed"); if (f) f.innerHTML = msg ? `<div class="feedback${/^Réponse (incomplète|non reconnue)/.test(msg)?" partiel":""}">${esc(msg)}</div>` : ""; }
+function ouvrirAutres(msg){
+  if (S.resolu || S.phase !== "actif") return;
+  if (Timer.rem <= 150){ defausser("Temps écoulé : personne n'a trouvé la bonne réponse."); return; }
+  S.exclus = new Set([S.courant]); S.repondant = null; S.complement = false; resetSaisie();
+  if (msg){ toast("❌ " + msg); afficherFeed(msg); }
+  SFX.ko();
+  S.phase = "autres";             // le même chronomètre continue : temps restant partagé
+  renderAll();
+}
+function choisirRepondant(i){
+  if (S.phase !== "autres" || S.resolu || S.exclus.has(i) || i === S.courant) return;
+  S.repondant = i; S.phase = "autresRep"; S.complement = false; resetSaisie(); renderAll(); focusSaisie();
+}
+function mauvaiseAutre(msg){
+  if (S.phase !== "autresRep" || S.resolu) return;
+  S.exclus.add(S.repondant);
+  const m = msg || `${S.joueurs[S.repondant].nom} abandonne.`;
+  toast("❌ " + m); afficherFeed(m);
+  S.repondant = null; resetSaisie(); SFX.ko();
+  const restants = S.joueurs.some((_,i) => !S.exclus.has(i));
+  if (restants && Timer.rem > 150){ S.phase = "autres"; renderAll(); }
+  else defausser(restants ? "Temps écoulé : personne n'a trouvé la bonne réponse." : "Tous les joueurs ont tenté leur chance, sans succès.");
+}
+
+/* ---------- Attribution des cartes (une seule fois par carte) ---------- */
+function gagner(i){
+  if (!S.carte || S.resolu) return;
+  S.resolu = true; Timer.stop();
+  const c = S.carte.couleur, p = S.joueurs[i];
+  p.coll[c]++; p.cartes.push(S.carte.id);
+  S.resultat = {gagne:true, joueur:i, couleur:c};
+  S.phase = "fin"; reveler(); SFX.ok(); renderAll();
+  if (estGagnant(p)){
+    S.phase = "win"; S.gagnant = i; Timer.stop(); renderAll();
+    effacerSauvegarde();
+    const tok = S.tok; setTimeout(() => { if (S.tok === tok) afficherVictoire(); }, 1700);
+    return;
+  }
+  sauvegarder(true);
+}
+function defausser(msg){
+  if (!S.carte || S.resolu) return;
+  S.resolu = true; Timer.stop(); S.defausse++;
+  S.resultat = {gagne:false, msg};
+  S.phase = "fin"; S.repondant = null;
+  reveler(); SFX.end(); renderAll();
+  sauvegarder(true);
+}
+function reveler(){
+  const box = $("#answerBox"); if (!box) return;
+  box.innerHTML = answerHTML(S.carte); box.hidden = false;
+  afficherFeed("");
+  const card = S.carte, mode = modeDe(card);
+  majIndices(true);
+  if (mode === "qcm" || mode === "qcmMulti" || mode === "vf"){
+    const gagne = S.resultat && S.resultat.gagne;
+    const justes = gagne ? [...S.sel] : (mode === "vf" ? card.bonnes : bonnesDe(card));
+    $$("#opts .opt").forEach(b => { const k = b.dataset.k; b.classList.toggle("correct", justes.includes(k)); b.classList.toggle("wrong", S.sel.has(k) && !justes.includes(k)); });
+  } else if (mode === "trous"){
+    const bl = blancsDe(card);
+    $$("#qbody .blank").forEach((inp,i) => { const ok = blancOK(inp.value, bl[i].acc); inp.classList.toggle("good", ok); inp.classList.toggle("fix", !ok); if (!ok) inp.value = bl[i].ref; inp.readOnly = true; });
+  } else if (mode === "ordre"){
+    $$("#opts .opt").forEach(b => { b.classList.add("correct"); b.querySelector(".k").textContent = card.bonnes.indexOf(b.dataset.k)+1; });
+  } else if (mode === "grille"){
+    $$(".cw input").forEach(i => { const L = S.cwCells[i.dataset.r+","+i.dataset.c].L; i.classList.add(i.value === L ? "good" : "fix"); i.value = L; });
+  }
+}
+
+/* =====================================================================
+   15. TOURS ET PASSAGE DE MAIN (objectifs secrets)
+   ===================================================================== */
+function passageDeMain(){
+  S.phase = "handoff"; S.objVisible = false; S.de = null; S.pas = 0;
+  effacerMarques(); fermerQ(); Timer.reset();
+  const p = cur();
+  $("#hoAv").textContent = p.av; $("#hoAv").style.setProperty("--a", p.coul);
+  $("#hoNom").textContent = p.nom; $("#hoNom2").textContent = p.nom; $("#hoTour").textContent = S.tour;
+  const tir = $("#hoTirage");
+  tir.hidden = !(S.tour === 1 && S.courant === S.premier && !p.cartes.length && S.joueurs.every(q => q.pos === 0));
+  tir.textContent = `🎲 Tirage au sort : ${p.nom} commence la partie !`;
+  $("#handoff").classList.add("open");
+  renderAll();
+}
+function commencerTour(){
+  if (S.phase !== "handoff") return;
+  $("#handoff").classList.remove("open");
+  S.phase = "idle"; S.objVisible = true; renderAll();
+}
+function joueurSuivant(){
+  if (S.phase !== "fin") return;
+  Object.assign(S,{carte:null,resultat:null,derniere:null});
+  S.courant = (S.courant + 1) % S.joueurs.length;
+  if (S.courant === S.premier) S.tour++;
+  passageDeMain();
+}
+
+/* =====================================================================
+   16. CRÉATION, PAUSE, REDÉMARRAGE ET SAUVEGARDE
+   ===================================================================== */
+function verifierDefisAvantPartie(){
+  const valides = defisValides();
+  if (valides.length < S.joueurs.length) throw new Error("Pas assez de cartes Défi équitables pour " + S.joueurs.length + " joueurs.");
+  if (!valides.every(d => totalDefi(d) === TOTAL_OBJECTIF && totalDefi(d) <= MAX_OBJECTIF)) throw new Error("Cartes Défi inéquitables.");
+}
+function tirerMaCarteDefi(){
+  const p = cur();
+  if (!p || p.defi || S.phase !== "idle" || S.pause) return;
+  const d = tirerDefiPour(p);
+  p.defi = d.id; p.obj = objectifsDe(d);
+  S.objVisible = true;
+  sauvegarder(false);                 // le tirage est enregistré : il ne change plus
+  SFX.flip();
+  ouvrirModal("🎴 Votre carte Défi", `<p class="muted" style="margin-top:0">Tirée au hasard. Gardez-la pour vous : elle reste secrète pour les autres joueurs.</p>
+    <div class="defi-reveal">${defiHTML(p, false)}</div>
+    <div class="confirm-actions"><button class="btn primary" data-a="close">C'est noté</button></div>`, true);
+  renderAll();
+  if (estGagnant(p)){            // cas rare : cartes déjà gagnées avant le tirage
+    S.phase = "win"; S.gagnant = S.courant; effacerSauvegarde();
+    const tok = S.tok; setTimeout(() => { if (S.tok === tok){ fermerModal(); afficherVictoire(); } }, 1800);
+  }
+}
+function lancerPartie(){
+  const st = S.setup, vus = {};
+  const joueurs = [];
+  for (let i=0;i<st.n;i++){
+    let nom = (st.noms[i]||"").trim() || `Joueur ${i+1}`;
+    if (vus[nom]) nom = `${nom} (${i+1})`; vus[nom] = true;
+    joueurs.push({id:"J"+(i+1), nom, av:st.av[i] || PION_EMO[i], coul:PION_COUL[i], pos:0, coll:Object.fromEntries(ORDRE.map(c=>[c,0])), cartes:[], defi:null, obj:null});
+  }
+  S.joueurs = joueurs;
+  demarrer();
+}
+function demarrer(){
+  S.tok++; Timer.reset(); S.pause = false; $("#pausebox").classList.remove("open");
+  S.joueurs.forEach(p => { p.pos = 0; p.coll = Object.fromEntries(ORDRE.map(c=>[c,0])); p.cartes = []; p.defi = null; p.obj = null; });
+  verifierDefisAvantPartie();
+  initDecks();
+  S.premier = Math.floor(Math.random()*S.joueurs.length);   // premier joueur toujours tiré au sort
+  S.courant = S.premier;
+  Object.assign(S, {tour:1, carte:null, resolu:false, resultat:null, derniere:null, gagnant:null, revealAll:false});
+  show("game"); construirePlateau(); creerPions(); construireDe();
+  passageDeMain();
+  sauvegarder(false);
+}
+function mettrePause(){
+  if (S.pause) return;
+  S.pause = true;
+  if (Timer.running){ Timer.pause(); S.timerAvantPause = true; } else S.timerAvantPause = false;
+  appliquerVerrou();
+}
+function reprendre(){
+  if (!S.pause) return;
+  S.pause = false; $("#pausebox").classList.remove("open");
+  if (S.timerAvantPause){ S.timerAvantPause = false; Timer.resume(); }
+  renderAll();
+}
+const SAVE_KEY = "qsg_partie_v3";
+function sauvegarder(finDeCarte){
+  if (!S.joueurs.length || S.phase === "win") return;
+  let courant = S.courant, tour = S.tour;
+  if (finDeCarte){ courant = (S.courant + 1) % S.joueurs.length; if (courant === S.premier) tour++; }
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({v:3, joueurs:S.joueurs, courant, tour, premier:S.premier, decks:S.decks, defausse:S.defausse, date:Date.now()}));
+  } catch (e) {}
+}
+function lireSauvegarde(){ try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)||"null"); return s && s.v === 3 && s.joueurs && s.joueurs.length ? s : null; } catch (e) { return null; } }
+function effacerSauvegarde(){ try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
+function reprendreSauvegarde(){
+  const s = lireSauvegarde(); if (!s){ toast("Aucune partie sauvegardée."); majAccueil(); return; }
+  S.tok++; Timer.reset(); S.pause = false;
+  Object.assign(S, {joueurs:s.joueurs, courant:s.courant, tour:s.tour, premier:s.premier, decks:s.decks, defausse:s.defausse,
+                    carte:null, resolu:false, resultat:null, derniere:null, gagnant:null, revealAll:false});
+  ORDRE.forEach(c => { S.decks[c] = (S.decks[c]||[]).filter(id => CARTE_PAR_ID[id] && jouable(CARTE_PAR_ID[id])); });
+  show("game"); construirePlateau(); creerPions(); construireDe();
+  passageDeMain();
+}
+function quitterVersAccueil(garder){
+  S.tok++; Timer.stop(); S.pause = false; fermerQ(); fermerModal();
+  $("#handoff").classList.remove("open"); $("#pausebox").classList.remove("open");
+  if (!garder) effacerSauvegarde();
+  S.phase = "none"; show("home"); majAccueil();
+}
+
+/* =====================================================================
+   17. VICTOIRE
+   ===================================================================== */
+function defiHTML(p, avecProgression){
+  const d = DEFIS.find(x => x.id === p.defi);
+  const tot = ORDRE.reduce((s,c)=>s+p.obj[c],0);
+  const prog = ORDRE.reduce((s,c)=>s+Math.min(p.coll[c],p.obj[c]),0);
+  return `<div class="defi"><div class="dh"><b>${esc(d.nom)}</b><span>${tot} cartes</span></div>
+    ${ORDRE.filter(c => p.obj[c] > 0).map(c => { const n=p.coll[c], o=p.obj[c], done=n>=o;
+      return `<div class="drow ${avecProgression&&done?"done":""}" style="${cvars(c)}"><span class="sw"></span><span class="th">${COULEURS[c].theme}</span>
+        <span class="q">${avecProgression ? (done?`✓ ${Math.min(n,o)}/${o}`:`${n}/${o}`) : o}</span></div>`; }).join("")}
+    ${avecProgression ? `<div class="bar"><i style="width:${(prog/tot*100).toFixed(0)}%"></i></div><div style="font-size:.82rem;font-weight:800;color:var(--muted)">${prog}/${tot} cartes de l'objectif</div>` : ""}
+  </div>`;
+}
+function afficherVictoire(){
+  Timer.stop(); fermerQ();
+  const g = S.joueurs[S.gagnant];
+  $("#winName").textContent = g.nom;
+  $("#winDefi").innerHTML = defiHTML(g, true);
+  renderTableFin();
+  show("win"); SFX.win(); confettis();
+}
+function renderTableFin(){
+  const rows = S.joueurs.map((p,i)=>({p,i})).sort((a,b)=> (b.i===S.gagnant)-(a.i===S.gagnant) || b.p.cartes.length-a.p.cartes.length);
+  $("#winTable").innerHTML = `<table><thead><tr><th>Joueur</th>${ORDRE.map(c=>`<th title="${COULEURS[c].theme}"><span class="sq" style="--c:${COULEURS[c].hex}"></span></th>`).join("")}<th>Total</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr class="${r.i===S.gagnant?"w":""}"><td>${r.i===S.gagnant?"🏆 ":""}${r.p.av} ${esc(r.p.nom)}${S.revealAll?`<div class="objs">Objectif : ${r.p.defi?esc(DEFIS.find(d=>d.id===r.p.defi).nom):"carte non tirée"}</div>`:""}</td>
+      ${ORDRE.map(c=>`<td>${S.revealAll&&r.p.obj?`${r.p.coll[c]}/${r.p.obj[c]}`:r.p.coll[c]}</td>`).join("")}<td><b>${r.p.cartes.length}</b></td></tr>`).join("")}</tbody></table>
+    <p class="muted" style="margin:10px 0 0;font-size:.9rem">${S.tour} tour${S.tour>1?"s":""} · ${S.defausse} carte${S.defausse>1?"s":""} défaussée${S.defausse>1?"s":""}</p>`;
+  $("#revealAllBtn").textContent = S.revealAll ? "🙈 Masquer les objectifs" : "👁 Révéler tous les objectifs";
+}
+function confettis(){
+  const cv = $("#confetti"), ctx = cv.getContext("2d"), dpr = window.devicePixelRatio || 1;
+  cv.width = innerWidth*dpr; cv.height = innerHeight*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  const cols = ORDRE.map(c=>COULEURS[c].hex).concat(["#ffd166","#ffffff"]);
+  const P = Array.from({length:220}, () => ({x:Math.random()*innerWidth, y:-20-Math.random()*innerHeight*.6, w:6+Math.random()*7, h:8+Math.random()*10,
+    vx:-1.5+Math.random()*3, vy:2+Math.random()*3.5, r:Math.random()*6, vr:-.2+Math.random()*.4, c:cols[Math.floor(Math.random()*cols.length)]}));
+  const t0 = performance.now();
+  (function f(t){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    P.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=.03; p.r+=p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore(); });
+    if (t - t0 < 5500) requestAnimationFrame(f); else ctx.clearRect(0,0,innerWidth,innerHeight);
+  })(t0);
+}
+
+/* =====================================================================
+   18. INTERFACE : rendu des panneaux
+   ===================================================================== */
+function renderAll(){
+  if (!S.joueurs.length) return;
+  renderMoi(); renderDePanel(); renderJoueursPub(); renderQ(); placerPions();
+  $("#tourNo").textContent = `Tour n°${S.tour}`;
+}
+function renderMoi(){
+  const p = cur(); if (!p) return;
+  const enQuestion = (!!S.carte || S.phase === "choix") && S.phase !== "win";   // pendant une question, tout le monde regarde l'écran
+  const visible = S.objVisible && S.phase !== "handoff" && !enQuestion;
+  let h = `<div class="me-h"><span class="pawnav" style="--a:${p.coul}">${p.av}</span><div><div class="me-n">${esc(p.nom)}</div><div class="me-s">Pion n°${S.courant+1} · ${caseDot(p.pos)}${caseNom(p.pos)}</div></div></div>`;
+  h += `<p class="side-t" style="color:var(--muted);margin-left:0">🔒 Mon objectif secret</p>`;
+  if (!visible){
+    h += `<div class="secret-hidden"><div class="lock">🔒</div><p>${enQuestion ? "Objectif masqué pendant la question" : "Objectif masqué"}</p>${S.phase==="handoff"||enQuestion?"":`<button class="btn small dark" data-a="show-obj">👁 Afficher mon objectif</button>`}</div>`;
+  } else if (!p.defi){
+    h += `<div class="secret-hidden"><div class="lock">🎴</div><p>Vous n'avez pas encore de carte Défi.</p><button class="btn primary" data-a="tirer-defi">🎴 Tirer ma carte Défi</button></div>`;
+  } else {
+    h += defiHTML(p, true);
+    h += `<p class="side-t" style="color:var(--muted);margin-left:0">Mes cartes gagnées (${p.cartes.length})</p>`;
+    h += p.cartes.length ? `<div class="coll">${p.cartes.map(id => `<i style="--c:${COULEURS[CARTE_PAR_ID[id].couleur].hex}" title="${COULEURS[CARTE_PAR_ID[id].couleur].theme}"></i>`).join("")}</div>` : `<p class="muted" style="margin:0;font-size:.9rem">Aucune carte pour l'instant.</p>`;
+    h += `<div style="margin-top:12px"><button class="btn small ghost darkt" data-a="hide-obj">🙈 Masquer mon objectif</button></div>`;
+  }
+  $("#moiBox").innerHTML = h;
+}
+function renderDePanel(){
+  const p = cur(); if (!p) return;
+  $("#dpTurn").innerHTML = `<span class="pawnav" style="--a:${p.coul}">${p.av}</span><span>Au tour de ${esc(p.nom)}</span>`;
+  $("#dpVal").innerHTML = S.de ? `Résultat du dé : <b>${S.de}</b>` : (S.phase === "rolling" ? "Le dé roule…" : "&nbsp;");
+  const btn = $("#rollBtn");
+  // tant que la carte Défi n'est pas tirée, le bouton principal sert à la tirer
+  if (!p.defi && S.phase === "idle"){ btn.dataset.a = "tirer-defi"; btn.textContent = "🎴 Tirer ma carte Défi"; }
+  else { btn.dataset.a = "roll"; btn.textContent = "🎲 Lancer le dé"; }
+  btn.disabled = S.phase !== "idle" || S.pause;
+  let info = "";
+  if (S.phase === "idle") info = p.defi ? "Lancez le dé pour avancer dans le couloir." : "Tirez d'abord votre carte Défi secrète.";
+  else if (S.phase === "moving") info = `Déplacement : <b>${S.pas} / ${S.de}</b> case${S.de>1?"s":""}`;
+  else if (S.de && (S.phase === "landed" || S.phase === "choix" || S.carte)){
+    const cell = PLATEAU[p.pos];
+    info = `${S.de} case${S.de>1?"s":""} parcourue${S.de>1?"s":""}<br>`;
+    if (cell.type === "couleur") info += `<span class="chipc" style="${cvars(cell.couleur)}">${COULEURS[cell.couleur].theme}</span>`;
+    else if (cell.type === "multi") info += S.carte ? `<span class="chipc" style="${cvars(S.carte.couleur)}">${COULEURS[S.carte.couleur].theme}</span> (choisie)` : `${caseDot(p.pos)} Case multicolore : choix de la catégorie`;
+    else info += `Départ : on relance !`;
+  }
+  $("#dpInfo").innerHTML = info;
+}
+function renderJoueursPub(){
+  // tableau public : nom, pion, position et total de cartes. Jamais les objectifs.
+  $("#joueursBox").innerHTML = S.joueurs.map((p,i) => `<div class="pl ${i===S.courant?"active":""}">
+    <span class="pawnav" style="--a:${p.coul}">${p.av}<b>${i+1}</b></span>
+    <div class="pl-i"><b>${esc(p.nom)}</b><small>${caseDot(p.pos)}${caseNom(p.pos)}</small></div>
+    <span class="pl-c" title="Cartes gagnées">🃏 ${p.cartes.length}</span></div>`).join("");
+}
+function renderQ(){
+  if (!S.carte) return;
+  const ph = S.phase, mode = modeDe(S.carte);
+  const nomC = esc(cur().nom), rep = S.repondant != null ? esc(S.joueurs[S.repondant].nom) : "";
+  const ecrit = mode === "texte" || mode === "calcul" || mode === "trous";
+  const cons = {
+    flip:"La carte se retourne…",
+    actif: ecrit ? `${nomC} écrit sa réponse puis la valide. 30 secondes pour toute la carte.` : `${nomC} sélectionne sa réponse puis la valide. 30 secondes pour toute la carte.`,
+    autres:"À vous de jouer ! Les autres joueurs peuvent répondre par écrit pendant le temps restant.",
+    autresRep: ecrit ? `${rep} écrit sa réponse puis la valide. Le temps continue de s'écouler.` : `${rep} sélectionne sa réponse puis la valide. Le temps continue de s'écouler.`,
+    fin: S.resultat && S.resultat.gagne ? "Carte gagnée !" : "Carte terminée : lisez la correction.",
+    win:"🏆 Victoire !"
+  }[ph] || "";
+  const ce = $("#consigne"); ce.textContent = cons; ce.classList.toggle("autres", ph === "autres" || ph === "autresRep");
+  let h = "";
+  if (ph === "flip") h = `<div class="wait">⏳ Un instant…</div>`;
+  else if (ph === "actif") h = `<button class="btn ok xl" data-a="valider">✔️ Valider ma réponse</button><button class="btn ko" data-a="passer">⏭️ Passer la main</button>`;
+  else if (ph === "autres"){
+    h = `<div class="resp"><div class="resp-t">🙋 Qui veut répondre ? Touchez son nom.</div><div class="resp-b">${
+      S.joueurs.map((p,i) => i === S.courant ? "" : `<button class="btn" data-a="resp" data-i="${i}" ${S.exclus.has(i)?"disabled":""}>${p.av} ${esc(p.nom)}</button>`).join("")
+    }</div></div><button class="btn ghost" data-a="nobody">🤷 Personne ne trouve</button>`;
+  }
+  else if (ph === "autresRep") h = `<button class="btn ok xl" data-a="valider">✔️ Valider la réponse de ${rep}</button><button class="btn ko" data-a="abandon">❌ ${rep} abandonne</button>`;
+  else if (ph === "fin") h = `<button class="btn primary xl" data-a="next">Joueur suivant ➜</button>`;
+  $("#qctrl").innerHTML = h;
+  const r = S.resultat;
+  $("#qres").innerHTML = !r ? "" : r.gagne
+    ? `<div class="result win">🎉 ${esc(S.joueurs[r.joueur].nom)} remporte une carte ${COULEURS[r.couleur].theme} !</div>`
+    : `<div class="result lose">${esc(r.msg)} La carte est défaussée.</div>`;
+  $("#minBtn").textContent = $("#qover").classList.contains("min") ? "🃏 Revenir à la question" : "🗺️ Voir le plateau";
+  appliquerVerrou(); majSelection();
+}
+
+/* =====================================================================
+   19. ACCUEIL, PRÉPARATION, MODALES
+   ===================================================================== */
+function majAccueil(){
+  const s = lireSauvegarde();
+  $("#resumeBtn").hidden = !s;
+  if (s){ const d = new Date(s.date); $("#resumeBtn").textContent = `▶ Reprendre la partie (${s.joueurs.length} joueurs, ${d.toLocaleDateString("fr-FR")})`; }
+  $("#newBtn").classList.toggle("primary", !s);
+}
+function renderHome(){
+  $("#contexteTxt").textContent = CONTEXTE_CLINIQUE;
+  $("#contexteJeu").textContent = CONTEXTE_CLINIQUE;
+  $("#homeBoard").innerHTML = plateauHTML("h-");
+  majAccueil();
+}
+function ouvrirSetup(garder){
+  if (!garder){ S.setup.noms = []; S.setup.av = []; }
+  show("setup"); renderSetup();
+}
+function renderSetup(){
+  const st = S.setup;
+  $("#countBtns").innerHTML = [2,3,4,5,6].map(n => `<button class="${n===st.n?'on':''}" data-a="count" data-n="${n}">${n}</button>`).join("");
+  $("#nameInputs").innerHTML = Array.from({length:st.n}, (_,i) => {
+    st.av[i] = st.av[i] || PION_EMO[i];
+    return `<div class="row"><button class="avpick" style="--a:${PION_COUL[i]}" data-a="av" data-i="${i}" title="Changer de pion">${st.av[i]}<small>${i+1}</small></button>
+     <input type="text" maxlength="18" data-name="${i}" placeholder="Joueur ${i+1}" value="${esc(st.noms[i]||"")}" aria-label="Nom du joueur ${i+1}"></div>`;
+  }).join("");
+}
+function ouvrirModal(titre, html, narrow){
+  const m = $("#modal"); m.classList.toggle("narrow", !!narrow);
+  m.innerHTML = `<div class="mh"><h2>${titre}</h2><button class="btn small dark" data-a="close">✕</button></div>${html}`;
+  $("#modalBack").classList.add("open");
+}
+function fermerModal(){ $("#modalBack").classList.remove("open"); }
+function enPartie(){ return $("#screen-game").classList.contains("active"); }
+function ouvrirMenu(){
+  mettrePause();
+  ouvrirModal("☰ Options de partie", `<div class="menu-list">
+    <button class="btn primary" data-a="menu-resume">▶ Reprendre la partie</button>
+    <button class="btn" data-a="menu-pause">⏸ Mettre en pause</button>
+    <button class="btn" data-a="menu-restart">🔁 Recommencer la partie</button>
+    <button class="btn" data-a="menu-stop">🏠 Arrêter la partie et retourner à l'accueil</button>
+  </div><p class="muted" style="font-size:.88rem;margin-bottom:0">Le jeu est en pause tant que ce menu est ouvert. La partie est sauvegardée automatiquement après chaque carte.</p>`, true);
+}
+
+const REGLES = `
+<p><b>Contexte :</b> ${esc(CONTEXTE_CLINIQUE)}</p>
+<p><b>But du jeu :</b> être le premier à réunir les cartes demandées par sa <b>carte Défi secrète</b>. À son premier tour, chaque joueur tire sa carte Défi au hasard avec le bouton « Tirer ma carte Défi ». Toutes les cartes Défi demandent ${TOTAL_OBJECTIF} cartes au total (jamais plus de ${MAX_OBJECTIF}) ; seule la répartition par couleur change.</p>
+<h3>Le plateau</h3>
+<p>Le plateau est le plan du service : les chambres et les bureaux bordent le service, les pièces centrales (poste de soins, bureau médical, salle de transmissions) sont au milieu, et le couloir fait le tour entre les deux. Les pions avancent dans ce couloir, sur un parcours fermé de 36 cases : arrivé au bout, on continue.</p>
+<p>Chaque couleur de case correspond à une catégorie de cartes :</p>
+<p>${ORDRE.map(c=>`<span class="pill" style="${cvars(c)};margin:2px">${COULEURS[c].theme}</span>`).join(" ")}</p>
+<p>Les <b>cases multicolores</b> laissent le joueur choisir la catégorie de sa carte. La case <b>Départ</b> (blanche, cerclée de vert) fait relancer le dé.</p>
+<h3>Un tour de jeu</h3>
+<ol>
+  <li>Un écran « Au tour de… » invite à passer l'appareil au bon joueur. Au début de la partie, le premier joueur est tiré au sort.</li>
+  <li>Le joueur lance le dé (1 à 6) et son pion avance automatiquement du nombre exact de cases.</li>
+  <li>La couleur de la case d'arrivée désigne la catégorie de la carte tirée.</li>
+  <li><b>30 secondes pour toute la carte.</b> Le joueur actif répond en premier, par écrit dans le champ prévu, ou en sélectionnant sa réponse pour un QCM, un vrai/faux, une priorisation ou une grille. Il valide avec « Valider ma réponse ».</li>
+  <li>Le jeu corrige automatiquement. Bonne réponse : la carte est gagnée. Sinon, les autres joueurs peuvent répondre par écrit pendant le temps restant : on touche le nom de celui qui veut répondre, il écrit puis valide. Une réponse fausse l'exclut de cette carte.</li>
+  <li>Si le temps s'écoule ou si personne ne trouve, la carte est défaussée et la correction s'affiche.</li>
+</ol>
+<h3>Correction automatique</h3>
+<p>La correction est faite par le jeu lui-même, sans connexion à Internet ni intelligence artificielle. Pour chaque question rédigée, il connaît la réponse de référence, les éléments attendus et leurs synonymes ou abréviations courantes (par exemple « essoufflement » pour dyspnée, « SpO2 » pour saturation). Il ne tient compte ni des accents, ni des majuscules, ni des petites fautes de frappe. La consigne indique combien d'éléments citer.</p>
+<ul>
+  <li><b>Réponse juste</b> : la carte est gagnée.</li>
+  <li><b>Réponse incomplète ou non reconnue</b> : elle n'est pas déclarée fausse tout de suite. Le jeu montre ce qu'il a reconnu et laisse un essai pour compléter ou reformuler, dans le temps restant.</li>
+  <li><b>Erreur de fond</b> (par exemple « la personne de confiance décide à la place du patient ») : la réponse est refusée et l'erreur est expliquée.</li>
+</ul>
+<p>La correction affiche ensuite la réponse de référence, les éléments attendus et une explication. Pour les calculs, indiquez la valeur et l'unité. Pour les textes à trous, complétez chaque case : les mots attendus sont surlignés dans la correction, et une case fausse peut être corrigée une fois.</p>
+<h3>Cartes Défi secrètes</h3>
+<p>Chaque joueur reçoit une carte Défi différente. Elle n'est visible que par son propriétaire, pendant son tour, et elle est masquée pendant les questions. Le tableau public n'indique que le nom, le pion, la case et le nombre total de cartes gagnées.</p>
+<h3>Victoire</h3>
+<p>Dès qu'un joueur a réuni toutes les cartes de sa carte Défi, la partie s'arrête immédiatement. Avoir assez de cartes d'une seule couleur ne suffit pas.</p>
+<h3>Menu, pause et sauvegarde</h3>
+<p>Le bouton <b>☰ Menu</b> met la partie en pause et permet de reprendre, recommencer (avec confirmation) ou arrêter. La partie est sauvegardée dans le navigateur après chaque carte.</p>
+<h3>Sécurité pédagogique</h3>
+<p>Les calculs de doses sont des exercices et ne valent pas autorisation d'administrer.</p>`;
+
+function confirmer(titre, texte, boutons){
+  ouvrirModal(titre, `<p>${texte}</p><div class="confirm-actions">${boutons.map(b=>`<button class="btn ${b.cls||""}" data-a="${b.a}">${b.t}</button>`).join("")}</div>`, true);
+}
+
+/* =====================================================================
+   20. ÉVÉNEMENTS
+   ===================================================================== */
+const ACTIONS_JEU = new Set(["tirer-defi","roll","opt","clue","valider","passer","abandon","resp","nobody","next","start-turn","show-obj","hide-obj","minq","choisir"]);
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-a]"); if (!b || b.disabled) return;
+  const a = b.dataset.a;
+  if (S.pause && ACTIONS_JEU.has(a)) return;      // pause : aucune interaction de jeu
+  if (S.phase === "win" && ACTIONS_JEU.has(a)) return;
+  switch (a){
+    case "home-new": ouvrirSetup(false); break;
+    case "resume-save": reprendreSauvegarde(); break;
+    case "home": quitterVersAccueil(S.phase !== "win" && enPartie()); break;
+    case "rules": ouvrirModal("📖 Règles du jeu", REGLES); break;
+    case "close":
+      fermerModal();
+      if (enPartie() && S.pause && !$("#pausebox").classList.contains("open")) reprendre();
+      break;
+    case "count": S.setup.n = +b.dataset.n; renderSetup(); break;
+    case "av": { const i=+b.dataset.i; const k=PION_EMO.indexOf(S.setup.av[i]); S.setup.av[i]=PION_EMO[(k+1)%PION_EMO.length]; b.firstChild.textContent=S.setup.av[i]; break; }
+    case "start": lancerPartie(); break;
+    case "sound": S.son = !S.son; $("#soundBtn").textContent = S.son ? "🔊 Son" : "🔇 Muet"; if (S.son) beep(660,.1); break;
+    case "menu": ouvrirMenu(); break;
+    case "menu-resume": fermerModal(); reprendre(); break;
+    case "menu-pause": fermerModal(); $("#pausebox").classList.add("open"); break;
+    case "resume": reprendre(); break;
+    case "menu-restart": confirmer("🔁 Recommencer ?", "Voulez-vous vraiment recommencer cette partie ? La progression actuelle sera perdue.",
+        [{t:"Annuler",a:"menu",cls:"ghost darkt"},{t:"Recommencer",a:"do-restart",cls:"primary"}]); break;
+    case "do-restart": fermerModal(); demarrer(); break;
+    case "menu-stop": confirmer("🏠 Arrêter la partie ?", "Voulez-vous arrêter la partie et revenir à l'accueil ? Vous pouvez garder la sauvegarde pour la reprendre plus tard, ou l'effacer.",
+        [{t:"Annuler",a:"menu",cls:"ghost darkt"},{t:"Quitter et garder la sauvegarde",a:"do-stop-keep"},{t:"Arrêter et effacer",a:"do-stop",cls:"ko"}]); break;
+    case "do-stop-keep": quitterVersAccueil(true); break;
+    case "do-stop": quitterVersAccueil(false); break;
+    case "start-turn": commencerTour(); break;
+    case "show-obj": if (S.phase !== "handoff"){ S.objVisible = true; renderMoi(); } break;
+    case "hide-obj": S.objVisible = false; renderMoi(); break;
+    case "roll": lancerDe(); break;
+    case "tirer-defi": tirerMaCarteDefi(); break;
+    case "choisir": choisirCouleur(b.dataset.c); break;
+    case "opt": clicOption(b.dataset.k); break;
+    case "clue": { S.cwDir = b.dataset.dir; const i = $(`.cw input[data-r="${b.dataset.r}"][data-c="${b.dataset.c}"]`); if (i && !i.disabled) i.focus(); break; }
+    case "valider": validerReponse(); break;
+    case "passer": if (S.phase === "actif") ouvrirAutres(`${cur().nom} passe la main.`); break;
+    case "abandon": if (S.phase === "autresRep") mauvaiseAutre(); break;
+    case "resp": choisirRepondant(+b.dataset.i); break;
+    case "nobody": if (S.phase === "autres") defausser("Personne n'a trouvé la bonne réponse."); break;
+    case "minq": $("#qover").classList.toggle("min"); renderQ(); break;
+    case "next": joueurSuivant(); break;
+    case "replay": S.setup.n = S.joueurs.length; S.setup.noms = S.joueurs.map(p=>p.nom); S.setup.av = S.joueurs.map(p=>p.av); ouvrirSetup(true); break;
+    case "reveal-all": S.revealAll = !S.revealAll; renderTableFin(); break;
+  }
+});
+document.addEventListener("input", e => {
+  if (e.target.matches("[data-name]")) S.setup.noms[+e.target.dataset.name] = e.target.value;
+});
+$("#modalBack").addEventListener("click", e => { if (e.target.id === "modalBack"){ fermerModal(); if (enPartie() && S.pause && !$("#pausebox").classList.contains("open")) reprendre(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && $("#modalBack").classList.contains("open")){ fermerModal(); if (enPartie() && S.pause && !$("#pausebox").classList.contains("open")) reprendre(); }
+  // Entrée valide un calcul ; Ctrl/Cmd + Entrée valide une réponse rédigée
+  if (e.key === "Enter" && ((e.target.id === "repNum") || (e.target.id === "repTxt" && (e.ctrlKey || e.metaKey)))){ e.preventDefault(); validerReponse(); }
+  if (e.key === "Enter" && e.target.classList && e.target.classList.contains("blank")){
+    e.preventDefault();
+    const all = $$("#qbody .blank"), i = all.indexOf(e.target);
+    const next = all.slice(i+1).concat(all.slice(0,i)).find(x => !x.readOnly && !x.value.trim());
+    if (next) next.focus(); else validerReponse();
+  }
+});
+window.addEventListener("beforeunload", e => {
+  if (enPartie() && S.phase !== "win" && S.phase !== "none"){ e.preventDefault(); e.returnValue = ""; }
+});
+
+/* Contrôles au chargement : correction prévue pour chaque question rédigée, équité des Défis */
+(function controles(){
+  const manquantes = TOUTES.filter(c => (modeDe(c) === "texte" || modeDe(c) === "calcul") && !CORRECTION[c.id]);
+  if (manquantes.length) console.error("Correction manquante :", manquantes.map(c=>c.id));
+  const injustes = DEFIS.filter(d => totalDefi(d) !== TOTAL_OBJECTIF);
+  if (injustes.length) console.error("Cartes Défi inéquitables :", injustes.map(d=>d.id));
+})();
+renderHome();
+</script>
+</body>
+</html>
